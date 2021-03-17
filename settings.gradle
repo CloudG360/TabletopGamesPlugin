@@ -1,0 +1,3 @@
+rootProject.name = 'TabletopGames'
+include('Nukkit', 'Spigot')
+

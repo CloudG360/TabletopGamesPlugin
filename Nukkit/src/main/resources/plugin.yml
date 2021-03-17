@@ -1,0 +1,9 @@
+name: TabletopGames
+main: me.cg360.games.tabletop.TabletopGamesNukkit
+load: POSTWORLD
+version: "1.0.0"
+api: ["1.0.9"]
+prefix: "tabletop"
+
+author: "CG360"
+description: "Games included: Jenga"
