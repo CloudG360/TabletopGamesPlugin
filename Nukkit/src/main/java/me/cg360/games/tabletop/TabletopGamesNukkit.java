@@ -6,7 +6,6 @@ import cn.nukkit.utils.Config;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.io.File;
-import java.io.IOException;
 
 public class TabletopGamesNukkit extends PluginBase {
 
