@@ -6,11 +6,23 @@ import java.util.HashMap;
 
 public class MicroGameRegistry {
 
+    private static MicroGameRegistry primaryRegistry;
+
     private HashMap<String, MicroGameProfile<?>> gameProfiles;
 
 
     public MicroGameRegistry() {
         this.gameProfiles = new HashMap<>();
+    }
+
+    /**
+     * Sets the registry of the result provided from MicroGameRegistry#get() and
+     * finalizes the instance to an extent.
+     *
+     * Cannot be changed once initially called.
+     */
+    public void setAsPrimaryRegistry(){
+        if(primaryRegistry == null) primaryRegistry = this;
     }
 
 
@@ -32,4 +44,10 @@ public class MicroGameRegistry {
         return false;
     }
 
+
+
+    /** @return the primary version of this registry. */
+    public static MicroGameRegistry get() {
+        return primaryRegistry;
+    }
 }
