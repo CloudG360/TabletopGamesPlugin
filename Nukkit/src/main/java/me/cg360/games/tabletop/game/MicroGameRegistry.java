@@ -4,6 +4,7 @@ import me.cg360.games.tabletop.TabletopGamesNukkit;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
 import net.cg360.nsapi.commons.id.Identifier;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -71,6 +72,12 @@ public class MicroGameRegistry {
             return Optional.of(gameProfiles.get(k));
         }
         return Optional.empty();
+    }
+
+
+
+    public ArrayList<MicroGameProfile<?>> getGameProfiles() {
+        return new ArrayList<>(gameProfiles.values());
     }
 
 
