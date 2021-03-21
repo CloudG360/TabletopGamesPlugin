@@ -6,6 +6,7 @@ import me.cg360.games.tabletop.game.rule.WatchdogRule;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
@@ -19,6 +20,21 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
         this.behaviour = behaviour;
         this.rules = new ArrayList<>(Arrays.asList(behaviour.getRules()));
         this.isRunning = true;
+    }
+
+
+    /**
+     * Stops the game that the watchdog is overlooking.
+     */
+    public void stopGame() {
+        if(isRunning()) {
+            this.isRunning = false;
+            getBehaviour().onFinish(); // Do any cleanup.
+
+            for(Map.Entry<Player, MicroGameWatchdog<?>> entry: new ArrayList<>(playerWatchdogs.entrySet())) {
+                entry.getValue().releasePlayer(entry.getKey());
+            }
+        }
     }
 
     /**
@@ -46,14 +62,6 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
         getBehaviour().onPlayerRelease(player);
     }
 
-    public void stopGame() {
-        if(isRunning()) {
-            this.isRunning = false;
-            // Do any cleanup.
-            getBehaviour().finish();
-            getBehaviour().onFinish();
-        }
-    }
 
 
 
