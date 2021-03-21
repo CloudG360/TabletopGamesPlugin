@@ -39,6 +39,14 @@ public abstract class MicroGameBehaviour {
         getWatchdog().stopGame();
     }
 
+    public final void capturePlayer(Player player) {
+        getWatchdog().capturePlayer(player);
+    }
+
+    public final void releasePlayer(Player player) {
+        getWatchdog().releasePlayer(player);
+    }
+
 
     // -- Watchdog init --
 
