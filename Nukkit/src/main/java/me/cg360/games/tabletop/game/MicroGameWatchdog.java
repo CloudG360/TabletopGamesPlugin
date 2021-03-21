@@ -1,23 +1,23 @@
 package me.cg360.games.tabletop.game;
 
 import cn.nukkit.Player;
+import me.cg360.games.tabletop.game.rule.WatchdogRule;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
-    private static HashMap<Player, MicroGameWatchdog<?>> playerWatchdogs;
-
-    static {
-        playerWatchdogs = new HashMap<>();
-
-    }
+    private static HashMap<Player, MicroGameWatchdog<?>> playerWatchdogs = new HashMap<>();
 
     private T behaviour;
+    private ArrayList<WatchdogRule> rules;
     private boolean isRunning;
 
     protected MicroGameWatchdog(T behaviour) {
         this.behaviour = behaviour;
+        this.rules = new ArrayList<>(Arrays.asList(behaviour.getRules()));
         this.isRunning = true;
     }
 
@@ -30,7 +30,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
         if(!playerWatchdogs.containsKey(player)) {
             playerWatchdogs.put(player, this);
-            getBehaviour().onSuccessfulPlayerCapture(player);
+            getBehaviour().onPlayerCapture(player);
             return true;
         }
         return false;
@@ -51,6 +51,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
             this.isRunning = false;
             // Do any cleanup.
             getBehaviour().finish();
+            getBehaviour().onFinish();
         }
     }
 

@@ -1,6 +1,7 @@
 package me.cg360.games.tabletop.game;
 
 import cn.nukkit.Player;
+import me.cg360.games.tabletop.game.rule.WatchdogRule;
 import net.cg360.nsapi.commons.data.Settings;
 
 public abstract class MicroGameBehaviour {
@@ -8,27 +9,38 @@ public abstract class MicroGameBehaviour {
 
     private MicroGameWatchdog<?> watchdog = null;
 
+    // -- Initialization --
+
     /** Entry point of the simple game instance. */
     public abstract void init(Settings settings);
 
-    /** Called when the game has already been ended. */
-    public void finish() {
-        if(getWatchdog().isRunning()) {
-            getWatchdog().stopGame();
-        }
-    }
+    public abstract WatchdogRule[] getRules();
 
 
+
+    // -- Important local events --
 
     /** Called when this micro-game successfully reserves a player. */
-    protected abstract void onSuccessfulPlayerCapture(Player player);
+    protected abstract void onPlayerCapture(Player player);
 
     /** Called when a player is removed from the micro-game. This can be externally
      * called in the case the player switches worlds, quits the server, etc. */
     protected abstract void onPlayerRelease(Player player);
 
+    /** Called when the #finish() method is called.*/
+    protected abstract void onFinish();
 
 
+
+    // -- Internal Watchdog proxy methods --
+
+    /** Called to end the game. */
+    public final void finish() {
+        getWatchdog().stopGame();
+    }
+
+
+    // -- Watchdog init --
 
     /**
      * Sets the watchdog of this live game instance if not
