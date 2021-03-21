@@ -75,6 +75,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
 
     public T getBehaviour() { return behaviour; }
+    public ArrayList<WatchdogRule> getRules() { return new ArrayList<>(rules); }
     public boolean isRunning() { return isRunning; }
 
 
