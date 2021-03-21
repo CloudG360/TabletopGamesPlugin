@@ -1,8 +1,11 @@
 package me.cg360.games.tabletop.game;
 
+import me.cg360.games.tabletop.TabletopGamesNukkit;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
+import net.cg360.nsapi.commons.id.Identifier;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 public class MicroGameRegistry {
 
@@ -42,6 +45,32 @@ public class MicroGameRegistry {
             return true;
         }
         return false;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public <T extends MicroGameProfile<?>> Optional<T> getProfile(Key<T> key) {
+        String k = key.get();
+
+        if(gameProfiles.containsKey(k)) {
+            try {
+                T profile = (T) gameProfiles.get(k);
+                return Optional.of(profile);
+            } catch (ClassCastException err) {
+                TabletopGamesNukkit.getLog().warning("Plugin tried getting a specific MicroGameProfile with the key '%s' however it was the wrong type.");
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<MicroGameProfile<?>> getProfile(Identifier identifier) {
+        String k = identifier.getID();
+
+        if(gameProfiles.containsKey(k)) {
+            return Optional.of(gameProfiles.get(k));
+        }
+        return Optional.empty();
     }
 
 
