@@ -51,7 +51,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
      * @param player the player being captured.
      * @return true if the player was captured successfully.
      */
-    protected boolean capturePlayer(Player player) {
+    public boolean capturePlayer(Player player) {
 
         if(!playerWatchdogs.containsKey(player)) {
             playerWatchdogs.put(player, this);
@@ -66,7 +66,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
      * from a game.
      * @param player the player being released
      */
-    protected void releasePlayer(Player player) {
+    public void releasePlayer(Player player) {
         playerWatchdogs.remove(player);
         getBehaviour().onPlayerRelease(player);
     }
@@ -91,5 +91,12 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return a duplicate map of the player watchdogs.
+     */
+    public static HashMap<Player, MicroGameWatchdog<?>> getPlayerWatchdogs() {
+        return new HashMap<>(playerWatchdogs);
     }
 }
