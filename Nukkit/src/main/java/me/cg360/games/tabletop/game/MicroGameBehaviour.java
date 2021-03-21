@@ -1,7 +1,6 @@
 package me.cg360.games.tabletop.game;
 
 import cn.nukkit.Player;
-import me.cg360.games.tabletop.game.rule.WatchdogRule;
 import net.cg360.nsapi.commons.data.Settings;
 
 public abstract class MicroGameBehaviour {

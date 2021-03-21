@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.game.rule;
+package me.cg360.games.tabletop.game;
 
 import me.cg360.games.tabletop.game.MicroGameWatchdog;
 

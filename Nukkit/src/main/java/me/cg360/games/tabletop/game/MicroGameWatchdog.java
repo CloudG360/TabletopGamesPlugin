@@ -1,7 +1,6 @@
 package me.cg360.games.tabletop.game;
 
 import cn.nukkit.Player;
-import me.cg360.games.tabletop.game.rule.WatchdogRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +21,12 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
         this.isRunning = true;
     }
 
+    public void initRules() {
+        for(WatchdogRule rule: rules) {
+            rule.onStartWatchdog();
+        }
+    }
+
 
     /**
      * Stops the game that the watchdog is overlooking.
@@ -33,6 +38,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
             for(Map.Entry<Player, MicroGameWatchdog<?>> entry: new ArrayList<>(playerWatchdogs.entrySet())) {
                 entry.getValue().releasePlayer(entry.getKey());
+            }
+
+            for(WatchdogRule rule: rules) {
+                rule.onStopWatchdog();
             }
         }
     }
