@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.game;
+package me.cg360.games.tabletop.ngapimicro;
 
 import cn.nukkit.Player;
 import net.cg360.nsapi.commons.data.Settings;

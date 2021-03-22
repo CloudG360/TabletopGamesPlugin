@@ -1,6 +1,4 @@
-package me.cg360.games.tabletop.game;
-
-import me.cg360.games.tabletop.game.MicroGameWatchdog;
+package me.cg360.games.tabletop.ngapimicro;
 
 /**
  * Handles specific checks which would typically be watched by a

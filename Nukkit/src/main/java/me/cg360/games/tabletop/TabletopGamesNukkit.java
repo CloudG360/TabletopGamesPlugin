@@ -3,7 +3,7 @@ package me.cg360.games.tabletop;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
 import cn.nukkit.utils.Config;
-import me.cg360.games.tabletop.game.MicroGameRegistry;
+import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.io.File;

@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.game.rule;
+package me.cg360.games.tabletop.ngapimicro.rule;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
@@ -6,8 +6,8 @@ import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerTeleportEvent;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
-import me.cg360.games.tabletop.game.MicroGameWatchdog;
-import me.cg360.games.tabletop.game.WatchdogRule;
+import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
+import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 
 import java.util.HashMap;
 

@@ -9,3 +9,9 @@
 ![Supports: Nukkit](https://img.shields.io/badge/Nukkit-1.0.11-darkred?style=for-the-badge)
 
 This is a W.I.P repo for a Spigot + Nukkit plugin that aims to bring portable Micro-Games such as **Jenga** to minecraft servers.
+
+### NewGamesAPI Micro:
+
+This API is the backbone to all the micro-games included, giving a lot of power to the games themselves whilst offering optional "rules" which can do certain checks for them. This makes the api very flexible at the cost of requiring each project to track more by themselves.
+
+See [NGAPI 2.0](https://github.com/NewServerAPI-Project/NGAPI2) for a work-in-progress minigame api offering features such as kits, teams, and advanced mapping tools.
