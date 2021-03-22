@@ -28,6 +28,7 @@ public class MicroGameProfile<T extends MicroGameBehaviour> {
 
             inst.setWatchdog(watchdog);
             inst.init(settings.lock());
+            watchdog.initRules();
             return watchdog;
 
         } catch (InstantiationException | IllegalAccessException err) {
