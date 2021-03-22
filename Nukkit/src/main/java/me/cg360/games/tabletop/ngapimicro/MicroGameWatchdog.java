@@ -67,8 +67,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
      * @param player the player being released
      */
     public void releasePlayer(Player player) {
-        playerWatchdogs.remove(player);
-        getBehaviour().onPlayerRelease(player);
+        if(playerWatchdogs.containsKey(player) && (playerWatchdogs.get(player) == this)) { // Check player is actually in the lookup
+            playerWatchdogs.remove(player);
+            getBehaviour().onPlayerRelease(player);
+        }
     }
 
 
