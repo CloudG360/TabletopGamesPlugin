@@ -1,8 +1,11 @@
 package me.cg360.games.tabletop;
 
+import cn.nukkit.utils.TextFormat;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
 
 public class Util {
+
+    public static final TextFormat DEFAULT_TEXT_COLOUR = TextFormat.GRAY;
 
     /**
      * Shorthand method for checking OofTracker's configuration booleans.
@@ -25,5 +28,17 @@ public class Util {
                 return def;
             }
         }
+    }
+
+    public static String eMessage(String text){
+        return fMessage("ERROR", TextFormat.DARK_RED, text, TextFormat.RED);
+    }
+
+    public static String fMessage(String topic, TextFormat topicColour, String text){
+        return fMessage(topic, topicColour, text, DEFAULT_TEXT_COLOUR);
+    }
+
+    public static String fMessage(String topic, TextFormat topicColour, String text, TextFormat defaultTextColour){
+        return String.format("%s%s%s %s%s>> %s%s%s", topicColour, TextFormat.BOLD, topic.toUpperCase(), TextFormat.DARK_GRAY, TextFormat.BOLD, TextFormat.RESET, defaultTextColour, text);
     }
 }
