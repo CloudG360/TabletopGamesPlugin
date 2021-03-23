@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.ngapimicro;
+package me.cg360.games.tabletop.ngapimicro.keychain;
 
 import cn.nukkit.Player;
 import cn.nukkit.level.Location;

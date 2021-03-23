@@ -28,7 +28,7 @@ public class MicroGameProfile<T extends MicroGameBehaviour> {
     public MicroGameWatchdog<T> createInstance(Settings settings) {
         try {
             T inst = behaviourClass.newInstance();
-            MicroGameWatchdog<T> watchdog = new MicroGameWatchdog<>(inst);
+            MicroGameWatchdog<T> watchdog = new MicroGameWatchdog<>(this, inst);
 
             inst.setWatchdog(watchdog);
             inst.init(settings.lock());
