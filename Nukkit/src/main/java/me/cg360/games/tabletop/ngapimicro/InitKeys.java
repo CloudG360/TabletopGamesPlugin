@@ -12,6 +12,6 @@ public class InitKeys {
     public static final Key<Location> ORIGIN = new Key<>("origin");
 
     // Where was the game started?
-    public static final Key<Location> INVITE_RADIUS = new Key<>("invite_radius");
+    public static final Key<Double> INVITE_RADIUS = new Key<>("invite_radius");
 
 }
