@@ -1,5 +1,6 @@
 package me.cg360.games.tabletop.command;
 
+import cn.nukkit.Player;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.PluginCommand;
 import cn.nukkit.command.data.CommandEnum;
@@ -11,6 +12,8 @@ import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.ngapimicro.MicroGameProfile;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
+import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;
+import net.cg360.nsapi.commons.data.Settings;
 import net.cg360.nsapi.commons.id.Identifier;
 
 import java.util.Optional;
@@ -46,35 +49,59 @@ public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
 
         switch (args[0].toLowerCase()) {
 
-            case "start":
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION+".tablegame.start")) return true;
+            case "start": {
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.start")) return true;
 
-                break;
-
-
-
-            case "list":
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION+".tablegame.list")) return true;
-
-                sender.sendMessage(Util.fMessage("MICRO", TextFormat.DARK_AQUA, "The currently registered games are:"));
-
-                for (MicroGameProfile<?> profile: MicroGameRegistry.get().getGameProfiles()) {
-                    sender.sendMessage(String.format("%s - %s%s", TextFormat.DARK_GRAY, TextFormat.AQUA, profile.getIdentifier().getID()));
-                } // Maybe this should be async? oh well.
-                break;
-
-
-
-            case "detail":
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION+".tablegame.detail")) return true;
-
-                if(args.length < 2) {
+                if (args.length < 2) {
                     sender.sendMessage(Util.eMessage("This sub-command requires 2 parameters. (Game ID)"));
                     return true;
                 }
                 Optional<MicroGameProfile<?>> p = MicroGameRegistry.get().getProfile(new Identifier(args[1]));
 
-                if(p.isPresent()) {
+                if (p.isPresent()) {
+                    MicroGameProfile<?> profile = p.get();
+                    Settings gameSettings = new Settings();
+
+                    if(sender instanceof Player) {
+                        Player player = (Player) sender;
+                        gameSettings.set(InitKeys.HOST_PLAYER, player);
+                        gameSettings.set(InitKeys.ORIGIN, player.getLocation());
+                    }
+
+                    //TODO: Add a way to provide origin with parameters.
+
+                    profile.createInstance(gameSettings);
+                    sender.sendMessage(Util.fMessage("MICRO", TextFormat.DARK_AQUA, "Started the game!"));
+
+                } else {
+                    sender.sendMessage(Util.eMessage("This specified micro-game type does not exist."));
+                }
+            } break;
+
+
+
+            case "list": {
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.list")) return true;
+
+                sender.sendMessage(Util.fMessage("MICRO", TextFormat.DARK_AQUA, "The currently registered games are:"));
+
+                for (MicroGameProfile<?> profile : MicroGameRegistry.get().getGameProfiles()) {
+                    sender.sendMessage(String.format("%s - %s%s", TextFormat.DARK_GRAY, TextFormat.AQUA, profile.getIdentifier().getID()));
+                } // Maybe this should be async? oh well.
+            } break;
+
+
+
+            case "detail": {
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.detail")) return true;
+
+                if (args.length < 2) {
+                    sender.sendMessage(Util.eMessage("This sub-command requires 2 parameters. (Game ID)"));
+                    return true;
+                }
+                Optional<MicroGameProfile<?>> p = MicroGameRegistry.get().getProfile(new Identifier(args[1]));
+
+                if (p.isPresent()) {
                     MicroGameProfile<?> profile = p.get();
                     sender.sendMessage(Util.fMessage("MICRO", TextFormat.DARK_AQUA, String.format("Listing details for type %s'%s'", TextFormat.AQUA, args[1].toLowerCase())));
 
@@ -89,8 +116,7 @@ public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
                 } else {
                     sender.sendMessage(Util.eMessage("This specified micro-game type does not exist."));
                 }
-
-                break;
+            } break;
 
 
 
