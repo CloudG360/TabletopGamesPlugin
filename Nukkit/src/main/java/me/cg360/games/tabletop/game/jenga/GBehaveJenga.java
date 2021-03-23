@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.level.Location;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
+import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;
 import me.cg360.games.tabletop.ngapimicro.MicroGameBehaviour;
@@ -39,6 +40,11 @@ public class GBehaveJenga extends MicroGameBehaviour {
         if(origin == null) {
             if(host == null) throw new IllegalArgumentException("An origin (location) or a host (player) must be present to start Jenga.");
             this.origin = host.getLocation();
+        }
+
+        if (host != null) {
+            MicroGameWatchdog.removePlayerFromGames(host);
+            capturePlayer(host);
         }
 
         this.inviteLengthTicks = Math.max(initSettings.getOrElse(InitKeys.INITIAL_INVITE_LENGTH, 400), 20);
