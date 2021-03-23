@@ -1,5 +1,6 @@
 package me.cg360.games.tabletop.ngapimicro;
 
+import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
 import net.cg360.nsapi.commons.id.Identifier;
@@ -13,10 +14,13 @@ public class MicroGameProfile<T extends MicroGameBehaviour> {
 
 
     public MicroGameProfile(Identifier identifier, Class<T> behaviourClass, Settings properties) {
+        Check.nullParam(identifier, "identifier");
+        Check.nullParam(behaviourClass, "behaviourClass");
+
         this.identifier = identifier;
         this.behaviourClass = behaviourClass;
 
-        this.properties = properties.lock();
+        this.properties = (properties == null ? new Settings() : properties).lock();
     }
 
 

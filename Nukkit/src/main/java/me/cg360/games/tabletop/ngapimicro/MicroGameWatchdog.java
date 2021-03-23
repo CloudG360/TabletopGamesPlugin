@@ -1,6 +1,7 @@
 package me.cg360.games.tabletop.ngapimicro;
 
 import cn.nukkit.Player;
+import net.cg360.nsapi.commons.Check;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,8 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
     private boolean isRunning;
 
     protected MicroGameWatchdog(T behaviour) {
+        Check.nullParam(behaviour, "behaviour");
+
         this.behaviour = behaviour;
         this.rules = new ArrayList<>(Arrays.asList(behaviour.getRules()));
         this.isRunning = true;
