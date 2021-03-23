@@ -20,7 +20,9 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
     protected Location origin;
     protected String inviteMessage;
     protected double captureRadius;
+
     protected boolean sendInvitesImmediately;
+    protected boolean isEnabled;
 
     protected HashMap<Integer, Player> inviteMap;
 
@@ -31,8 +33,11 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
 
         this.origin = origin;
         this.inviteMessage = inviteMessage == null ? TextFormat.BLUE + "Would you like to join a micro-game?" : inviteMessage;
-        this.sendInvitesImmediately = sendInvitesImmediately;
         this.setCaptureRadius(radius);
+
+        this.sendInvitesImmediately = sendInvitesImmediately;
+        this.isEnabled = true;
+
 
         this.inviteMap = new HashMap<>();
     }
@@ -52,13 +57,15 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
 
     public void sendInvites() {
 
-        for(Player player: origin.getLevel().getPlayers().values()){
+        if(isEnabled) {
 
-            if(player.getPosition().getLocation().distance(origin) <= captureRadius) { // within radius.
-                sendPlayerInvite(player);
+            for (Player player : origin.getLevel().getPlayers().values()) {
+
+                if (player.getPosition().getLocation().distance(origin) <= captureRadius) { // within radius.
+                    sendPlayerInvite(player);
+                }
             }
         }
-
     }
 
 
@@ -66,7 +73,7 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
         MicroGameWatchdog<?> w = MicroGameWatchdog.getPlayerWatchdogs().get(player);
 
         //TODO: Config option to only send if the player is not in a game.
-        if(w != watchdog) { // Checks player isn't already in the current game
+        if( (w != watchdog)) { // Checks player isn't already in the current game
             FormWindowModal modal = new FormWindowModal("Micro-game Invite", inviteMessage, TextFormat.GREEN + "Yes!", TextFormat.RED + "No.");
             int id = player.showFormWindow(modal);
 
@@ -93,6 +100,11 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
             }
 
             if(accepted) {
+
+                if (!isEnabled) {
+                    owner.sendMessage(Util.eMessage("Invites for this game have closed. Try again next time! :)"));
+                    return;
+                }
                 MicroGameWatchdog<?> w = MicroGameWatchdog.getPlayerWatchdogs().get(owner);
 
                 if(w != watchdog) { // Ensures the player still isn't this watchdog.
@@ -114,5 +126,9 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
 
     public void setCaptureRadius(double captureRadius) {
         this.captureRadius = captureRadius >= 0 ? captureRadius : 0;
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 }

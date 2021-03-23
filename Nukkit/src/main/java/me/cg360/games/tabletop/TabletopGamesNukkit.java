@@ -2,6 +2,7 @@ package me.cg360.games.tabletop;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
+import cn.nukkit.scheduler.ServerScheduler;
 import cn.nukkit.utils.Config;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
 import net.cg360.nsapi.commons.data.Settings;
@@ -61,6 +62,7 @@ public class TabletopGamesNukkit extends PluginBase {
 
     public static TabletopGamesNukkit get() { return tabletopGamesNukkit; }
     public static PluginLogger getLog() { return get().getLogger(); }
+    public static ServerScheduler getScheduler() { return get().getServer().getScheduler(); }
     public static boolean isRunning() { return tabletopGamesNukkit != null; }
 
     public static MicroGameRegistry getMicroGameRegistry() { return get().microGameRegistry; }
