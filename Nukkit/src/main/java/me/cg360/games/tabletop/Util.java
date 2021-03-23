@@ -1,11 +1,14 @@
 package me.cg360.games.tabletop;
 
+import cn.nukkit.command.CommandSender;
 import cn.nukkit.utils.TextFormat;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
 
 public class Util {
 
     public static final TextFormat DEFAULT_TEXT_COLOUR = TextFormat.GRAY;
+    public static final String BASE_PERMISSION = "tabletop";
+    public static final String COMMAND_PERMISSION = BASE_PERMISSION+".command";
 
     /**
      * Shorthand method for checking OofTracker's configuration booleans.
@@ -28,6 +31,15 @@ public class Util {
                 return def;
             }
         }
+    }
+
+    public static boolean permissionCheck(CommandSender subject, String permission) {
+
+        if(!subject.hasPermission(permission)) {
+            subject.sendMessage(eMessage("You don't have the correct permissions to perform this action."));
+            return false;
+        }
+        return true;
     }
 
     public static String eMessage(String text){

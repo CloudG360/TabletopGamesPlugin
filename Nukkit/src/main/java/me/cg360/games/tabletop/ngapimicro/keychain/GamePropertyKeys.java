@@ -6,6 +6,6 @@ public class GamePropertyKeys {
 
     public static final Key<String> DISPLAY_NAME = new Key<>("display_name");
     public static final Key<String> DESCRIPTION = new Key<>("description");
-    public static final Key<String> AUTHOR = new Key<>("author");
+    public static final Key<String> AUTHORS = new Key<>("authors");
 
 }
