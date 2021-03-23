@@ -12,15 +12,22 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
     private static HashMap<Player, MicroGameWatchdog<?>> playerWatchdogs = new HashMap<>();
 
+    private MicroGameProfile<T> gameProfile;
     private T behaviour;
+
     private ArrayList<WatchdogRule> rules;
     private boolean isRunning;
 
-    protected MicroGameWatchdog(T behaviour) {
+    protected MicroGameWatchdog(MicroGameProfile<T> gameProfile, T behaviour) {
+        Check.nullParam(gameProfile, "gameProfile");
         Check.nullParam(behaviour, "behaviour");
 
+        this.gameProfile = gameProfile;
         this.behaviour = behaviour;
-        this.rules = new ArrayList<>(Arrays.asList(behaviour.getRules()));
+
+        WatchdogRule[] rules = behaviour.getRules();
+
+        this.rules = rules == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(rules));
         this.isRunning = true;
     }
 
@@ -78,8 +85,9 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
 
 
-
+    public MicroGameProfile<T> getGameProfile() { return gameProfile; }
     public T getBehaviour() { return behaviour; }
+
     public ArrayList<WatchdogRule> getRules() { return new ArrayList<>(rules); }
     public boolean isRunning() { return isRunning; }
 
