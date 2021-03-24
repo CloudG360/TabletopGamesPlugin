@@ -10,6 +10,7 @@ import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;
 import me.cg360.games.tabletop.ngapimicro.MicroGameBehaviour;
 import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleAcquirePlayersFromRadius;
+import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
@@ -71,6 +72,7 @@ public class GBehaveJenga extends MicroGameBehaviour {
         }, inviteLengthTicks);
 
         return new WatchdogRule[] {
+                new RuleReleasePlayerOnQuit(), // This one is important :)
                 new RuleReleasePlayerOnWorldChange(),
                 this.recruitmentRule
         };
