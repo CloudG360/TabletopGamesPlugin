@@ -5,5 +5,7 @@ version: "1.0.0"
 api: ["1.0.9"]
 prefix: "tabletop"
 
+depend: [ "NSAPICommons" ]
+
 author: "CG360"
-description: "Games included: Jenga"
+description: "Provides a micro-game api with games included such as: Jenga"

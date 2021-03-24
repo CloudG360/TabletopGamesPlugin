@@ -1,0 +1,13 @@
+name: TabletopGames
+version: 1.0.0
+main: me.cg360.games.tabletop.TabletopGamesSpigot
+api-version: 1.16
+prefix: tabletop
+authors: [ CG360 ]
+description: "Provides a micro-game api with games included such as: Jenga"
+
+depend: [ "NSAPICommons" ]
+
+commands:
+  tablegame:
+    description: "..."
