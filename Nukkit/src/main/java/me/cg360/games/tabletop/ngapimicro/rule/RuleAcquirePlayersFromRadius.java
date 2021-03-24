@@ -2,11 +2,14 @@ package me.cg360.games.tabletop.ngapimicro.rule;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.HandlerList;
+import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerFormRespondedEvent;
 import cn.nukkit.form.response.FormResponseModal;
 import cn.nukkit.form.window.FormWindowModal;
 import cn.nukkit.level.Location;
 import cn.nukkit.utils.TextFormat;
+import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
@@ -14,7 +17,7 @@ import net.cg360.nsapi.commons.Check;
 
 import java.util.HashMap;
 
-public class RuleAcquirePlayersFromRadius extends WatchdogRule {
+public class RuleAcquirePlayersFromRadius extends WatchdogRule implements Listener {
 
     protected Location origin;
     protected String inviteMessage;
@@ -45,12 +48,14 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
     @Override
     protected void onStartWatchdog(MicroGameWatchdog<?> watchdog) {
         this.watchdog = watchdog;
+        TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
+
         if(sendInvitesImmediately) sendInvites();
     }
 
     @Override
     protected void onStopWatchdog() {
-        // Maybe send a message saying that they are no longer eligible to join?
+        HandlerList.unregisterAll(this);
     }
 
 
