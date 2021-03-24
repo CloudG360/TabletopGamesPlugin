@@ -10,6 +10,8 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntitySpawnEvent;
 import cn.nukkit.event.level.ChunkUnloadEvent;
+import cn.nukkit.event.level.LevelUnloadEvent;
+import cn.nukkit.event.server.ServerStopEvent;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -216,21 +218,24 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST) // Cancel damage at the last minute :)
-    public void onDamage(EntityDamageEvent event) {
-        CompoundTag nbt = event.getEntity().namedTag;
+    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    public void onChunkUnload(LevelUnloadEvent event) {
 
-        if((nbt != null)) {
-            String uuid = nbt.getString(PERSISTANT_UUID_KEY);
+        if(event.getLevel() == origin.getLevel()) {
+            for (Entity entity : origin.getLevel().getEntities()) {
+                CompoundTag nbt = entity.namedTag;
 
-            if((uuid != null) && (uuid.length() != 0)) {
+                if ((nbt != null)) {
+                    String uuid = nbt.getString(PERSISTANT_UUID_KEY);
 
-                if(blockEntityIDs.containsKey(uuid)) {
-                    event.setCancelled(true);
+                    if ((uuid != null) && (uuid.length() != 0)) {
+
+                        if (blockEntityIDs.containsKey(uuid)) {
+                            entity.close();
+                        }
+                    }
                 }
             }
         }
     }
-
-
 }

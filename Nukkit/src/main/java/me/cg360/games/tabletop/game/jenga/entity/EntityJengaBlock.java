@@ -3,6 +3,7 @@ package me.cg360.games.tabletop.game.jenga.entity;
 import cn.nukkit.Player;
 import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
+import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
@@ -52,17 +53,12 @@ public class EntityJengaBlock extends EntityHuman {
     }
 
 
-
     @Override
-    public void spawnTo(Player player) {
-
-        if(this.namedTag == null) this.namedTag = new CompoundTag();
-
+    protected void initEntity() {
         this.skin = new Skin(); // Update skin
         this.skin.setGeometryData(GEOMETRY);
         this.skin.setGeometryName("geometry.game.jenga_block");
         this.skin.setSkinData(DATA);
-        this.skin.generateSkinId(this.getUniqueId().toString());
         this.skin.setTrusted(true);
 
         CompoundTag skinDataTag = new CompoundTag()
@@ -82,6 +78,16 @@ public class EntityJengaBlock extends EntityHuman {
                 .putBoolean("CapeOnClassicSkin", skin.isCapeOnClassic())
                 .putBoolean("IsTrustedSkin", true);
         this.namedTag.putCompound("Skin", skinDataTag);
+        super.initEntity();
+        this.skin.generateSkinId(this.getUniqueId().toString());
+    }
+
+    @Override
+    public void spawnTo(Player player) {
+
+        if(this.namedTag == null) this.namedTag = new CompoundTag();
+
+        this.skin.setTrusted(true);
 
         this.server.updatePlayerListData(this.getUniqueId(), this.getId(), this.getName(), this.getSkin());
 
@@ -106,4 +112,14 @@ public class EntityJengaBlock extends EntityHuman {
         super.spawnTo(player);
     }
 
+    @Override
+    public boolean attack(EntityDamageEvent source) {
+        source.setCancelled(true);
+        return false;
+    }
+
+    @Override
+    public boolean attack(float damage) {
+        return false;
+    }
 }
