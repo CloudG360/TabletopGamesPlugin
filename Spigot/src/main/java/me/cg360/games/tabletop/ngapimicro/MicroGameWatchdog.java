@@ -1,5 +1,6 @@
 package me.cg360.games.tabletop.ngapimicro;
 
+import me.cg360.games.tabletop.TabletopGamesSpigot;
 import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import net.cg360.nsapi.commons.Check;
@@ -46,16 +47,27 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
      * Stops the game that the watchdog is overlooking.
      */
     public void stopGame() {
+
         if(isRunning()) {
             this.isRunning = false;
-            getBehaviour().onFinish(); // Do any cleanup.
+
+            try {
+                getBehaviour().onFinish(); // Do any cleanup.
+
+            } catch (Exception err) {
+                err.printStackTrace();
+                TabletopGamesSpigot.getLog().warning("Error occured whilst stopping game. Yikes.");
+            }
 
             for(Map.Entry<Player, MicroGameWatchdog<?>> entry: new ArrayList<>(playerWatchdogs.entrySet())) {
                 entry.getValue().releasePlayer(entry.getKey());
             }
 
             for(WatchdogRule rule: rules) {
-                rule.onStopWatchdog();
+
+                try { rule.onStopWatchdog();
+                } catch (Exception err) { err.printStackTrace(); }
+
             }
         }
     }
@@ -73,7 +85,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
                     "JOIN",
                     ChatColor.GREEN,
                     String.format("You joined a game of %s'%s'.", ChatColor.AQUA, gameProfile.getProperties().getOrElse(GamePropertyKeys.DISPLAY_NAME, "???"))));
-            getBehaviour().onPlayerCapture(player);
+
+            try { getBehaviour().onPlayerCapture(player); }
+            catch (Exception err) { err.printStackTrace(); }
+
             return true;
         }
         return false;
@@ -87,7 +102,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
     public void releasePlayer(Player player) {
         if(playerWatchdogs.containsKey(player) && (playerWatchdogs.get(player) == this)) { // Check player is actually in the lookup
             playerWatchdogs.remove(player);
-            getBehaviour().onPlayerRelease(player);
+
+            try { getBehaviour().onPlayerRelease(player); }
+            catch (Exception err) { err.printStackTrace(); }
+
             player.sendMessage(Util.fMessage(
                     "LEAVE",
                     ChatColor.RED,

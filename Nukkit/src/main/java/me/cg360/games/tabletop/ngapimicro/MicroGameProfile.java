@@ -1,5 +1,6 @@
 package me.cg360.games.tabletop.ngapimicro;
 
+import me.cg360.games.tabletop.TabletopGamesNukkit;
 import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
@@ -30,9 +31,16 @@ public class MicroGameProfile<T extends MicroGameBehaviour> {
             T inst = behaviourClass.newInstance();
             MicroGameWatchdog<T> watchdog = new MicroGameWatchdog<>(this, inst);
 
-            inst.setWatchdog(watchdog);
-            inst.init(settings.lock());
-            watchdog.initRules();
+            try {
+                inst.setWatchdog(watchdog);
+                inst.init(settings.lock());
+                watchdog.initRules();
+
+            } catch (Exception err) {
+                err.printStackTrace();
+                TabletopGamesNukkit.getLog().error(String.format("Error whilst running the game '%s', stopping game.", identifier.getID()));
+                watchdog.stopGame();
+            }
             return watchdog;
 
         } catch (InstantiationException | IllegalAccessException err) {
