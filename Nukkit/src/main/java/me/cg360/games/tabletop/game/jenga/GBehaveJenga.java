@@ -1,8 +1,15 @@
 package me.cg360.games.tabletop.game.jenga;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.EventPriority;
+import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.entity.EntitySpawnEvent;
+import cn.nukkit.event.level.ChunkUnloadEvent;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -19,7 +26,6 @@ import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleAcquirePlayersFromRadius;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
-import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
 
 import javax.imageio.ImageIO;
@@ -28,10 +34,11 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 
-public class GBehaveJenga extends MicroGameBehaviour {
+public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     protected static final String PERSISTANT_UUID_KEY = "human_uuid";
     public static final float BLOCK_SCALE = 1f;
@@ -46,7 +53,7 @@ public class GBehaveJenga extends MicroGameBehaviour {
     protected RuleAcquirePlayersFromRadius recruitmentRule;
 
     protected Skin jengaBlockSkin = null;
-    protected ArrayList<String> persistentBlockIDs;
+    protected HashMap<String, Long> blockEntityIDs;
 
 
     @Override
@@ -56,7 +63,7 @@ public class GBehaveJenga extends MicroGameBehaviour {
 
         this.initSettings = settings;
         this.players = new ArrayList<>();
-        this.persistentBlockIDs = new ArrayList<>();
+        this.blockEntityIDs = new HashMap<>();
 
         // -- Init settings + shortcuts --
 
@@ -116,6 +123,10 @@ public class GBehaveJenga extends MicroGameBehaviour {
         } catch (IOException err) {
             throw new IllegalStateException("Unable to load Jenga block model from resources");
         }
+
+
+        // -- Enable Events --
+        TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
     }
 
 
@@ -206,10 +217,62 @@ public class GBehaveJenga extends MicroGameBehaviour {
         jengaHuman.setSkin(jengaBlockSkin);
         jengaHuman.setScale(BLOCK_SCALE);
 
-        persistentBlockIDs.add(uuid);
+        blockEntityIDs.put(uuid, jengaHuman.getId());
+        jengaHuman.spawnToAll();
+
         return uuid;
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        CompoundTag nbt = event.getEntity().namedTag;
+
+        if((nbt != null)) {
+            String uuid = nbt.getString(PERSISTANT_UUID_KEY);
+
+            if((uuid != null) && (uuid.length() != 0)) {
+
+                if(blockEntityIDs.containsKey(uuid)) {
+                    blockEntityIDs.put(uuid, event.getEntity().getId()); // Update entity ID in the case it's somehow overriden?
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    public void onChunkUnload(ChunkUnloadEvent event) {
+
+        for (Entity entity: new ArrayList<>(event.getChunk().getEntities().values())) {
+            CompoundTag nbt = entity.namedTag;
+
+            if((nbt != null)) {
+                String uuid = nbt.getString(PERSISTANT_UUID_KEY);
+
+                if((uuid != null) && (uuid.length() != 0)) {
+
+                    if(blockEntityIDs.containsKey(uuid)) {
+                        entity.close();
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST) // Cancel damage at the last minute :)
+    public void onDamage(EntityDamageEvent event) {
+        CompoundTag nbt = event.getEntity().namedTag;
+
+        if((nbt != null)) {
+            String uuid = nbt.getString(PERSISTANT_UUID_KEY);
+
+            if((uuid != null) && (uuid.length() != 0)) {
+
+                if(blockEntityIDs.containsKey(uuid)) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
 
 
 }
