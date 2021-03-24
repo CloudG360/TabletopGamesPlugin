@@ -1,8 +1,14 @@
 package me.cg360.games.tabletop.game.jenga;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.level.Location;
+import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.DoubleTag;
+import cn.nukkit.nbt.tag.FloatTag;
+import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
@@ -19,11 +25,16 @@ import net.cg360.nsapi.commons.data.Settings;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 
 public class GBehaveJenga extends MicroGameBehaviour {
+
+    protected static final String PERSISTANT_UUID_KEY = "human_uuid";
+    public static final float BLOCK_SCALE = 1f;
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -35,6 +46,8 @@ public class GBehaveJenga extends MicroGameBehaviour {
     protected RuleAcquirePlayersFromRadius recruitmentRule;
 
     protected Skin jengaBlockSkin = null;
+    protected ArrayList<String> persistentBlockIDs;
+
 
     @Override
     public void init(Settings settings) {
@@ -108,7 +121,10 @@ public class GBehaveJenga extends MicroGameBehaviour {
         this.recruitmentRule = new RuleAcquirePlayersFromRadius(inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
 
         TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
+
             this.recruitmentRule.setEnabled(false); // Disable invites after invite interval, open for at least 1 second.
+            if(getWatchdog().isRunning()) onFinishRecruitment(); // Check it's still running.
+
         }, inviteLengthTicks);
 
         return new WatchdogRule[] {
@@ -132,4 +148,64 @@ public class GBehaveJenga extends MicroGameBehaviour {
     protected void onFinish() {
         // Delete jenga entities.
     }
+
+
+
+    protected void onFinishRecruitment() {
+        spawnBlock(origin.getLocation());
+    }
+
+    /** @return the id of the spawned block.*/
+    protected String spawnBlock(Location position) {
+        String uuid = UUID.randomUUID().toString();
+
+        CompoundTag nbt = new CompoundTag()
+                .putList(new ListTag<>("Pos")
+                        .add(new DoubleTag("", position.getX()))
+                        .add(new DoubleTag("", position.getY()))
+                        .add(new DoubleTag("", position.getZ())))
+                .putList(new ListTag<DoubleTag>("Motion")
+                        .add(new DoubleTag("", 0))
+                        .add(new DoubleTag("", 0))
+                        .add(new DoubleTag("", 0)))
+                .putList(new ListTag<FloatTag>("Rotation")
+                        .add(new FloatTag("", (float) position.getYaw()))
+                        .add(new FloatTag("", (float) position.getPitch())))
+                .putBoolean("npc", true)
+                .putFloat("scale", BLOCK_SCALE)
+                .putString(PERSISTANT_UUID_KEY, uuid);
+        CompoundTag skinDataTag = new CompoundTag()
+                .putByteArray("Data", jengaBlockSkin.getSkinData().data)
+                .putInt("SkinImageWidth", jengaBlockSkin.getSkinData().width)
+                .putInt("SkinImageHeight", jengaBlockSkin.getSkinData().height)
+                .putString("ModelId", jengaBlockSkin.getSkinId())
+                .putString("CapeId", jengaBlockSkin.getCapeId())
+                .putByteArray("CapeData", jengaBlockSkin.getCapeData().data)
+                .putInt("CapeImageWidth", jengaBlockSkin.getCapeData().width)
+                .putInt("CapeImageHeight", jengaBlockSkin.getCapeData().height)
+                .putByteArray("SkinResourcePatch", jengaBlockSkin.getSkinResourcePatch().getBytes(StandardCharsets.UTF_8))
+                .putByteArray("GeometryData", jengaBlockSkin.getGeometryData().getBytes(StandardCharsets.UTF_8))
+                .putByteArray("AnimationData", jengaBlockSkin.getAnimationData().getBytes(StandardCharsets.UTF_8))
+                .putBoolean("PremiumSkin", jengaBlockSkin.isPremium())
+                .putBoolean("PersonaSkin", jengaBlockSkin.isPersona())
+                .putBoolean("CapeOnClassicSkin", jengaBlockSkin.isCapeOnClassic());
+        nbt.putCompound("Skin", skinDataTag);
+        nbt.putBoolean("ishuman", true);
+
+        FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
+        EntityHuman jengaHuman = new EntityHuman(chunk, nbt);
+        jengaHuman.setPositionAndRotation(position, position.getYaw(), position.getPitch());
+        jengaHuman.setImmobile(true);
+        jengaHuman.setNameTagAlwaysVisible(false);
+        jengaHuman.setNameTagVisible(false);
+        jengaHuman.setNameTag(uuid);
+        jengaHuman.setSkin(jengaBlockSkin);
+        jengaHuman.setScale(BLOCK_SCALE);
+
+        persistentBlockIDs.add(uuid);
+        return uuid;
+    }
+
+
+
 }
