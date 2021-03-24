@@ -16,6 +16,8 @@ import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.network.protocol.PlayerListPacket;
+import cn.nukkit.network.protocol.PlayerSkinPacket;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
@@ -33,10 +35,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.UUID;
+import java.util.*;
 
 public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
@@ -52,7 +51,9 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     protected RuleAcquirePlayersFromRadius recruitmentRule;
 
-    protected Skin jengaBlockSkin = null;
+    protected String jengaBlockSkinGeometry;
+    protected BufferedImage jengaBlockSkinData;
+
     protected HashMap<String, Long> blockEntityIDs;
 
 
@@ -83,7 +84,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         // -- Handle invite setup --
 
-        this.inviteLengthTicks = Math.max(initSettings.getOrElse(InitKeys.INITIAL_INVITE_LENGTH, 400), 20);
+        this.inviteLengthTicks = Math.max(initSettings.getOrElse(InitKeys.INITIAL_INVITE_LENGTH, 200), 20);
         this.inviteMessage = host == null ?
                 // Null player host.
                 String.format("%sYou have been invited to a game of %s%s%s! Would you like to join? You have %s%s%ss to join.",
@@ -98,7 +99,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         // -- Generate Skin --
 
         try {
-            this.jengaBlockSkin = new Skin();
             InputStream skinGeoIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.json");
             InputStream skinDataIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.png");
 
@@ -111,14 +111,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                 if(i.hasNext()) geoStr = geoStr.concat("\n"); // Add a newline unless the end has been reached.
             }
 
-            BufferedImage skinData = ImageIO.read(skinDataIn);
-
-            this.jengaBlockSkin.setArmSize("wide");
-            this.jengaBlockSkin.setTrusted(true);
-            this.jengaBlockSkin.setGeometryData(geoStr);
-            this.jengaBlockSkin.setGeometryName("geometry.game.jenga_block");
-            this.jengaBlockSkin.setSkinData(skinData);
-            this.jengaBlockSkin.generateSkinId("JengaBlock");
+            this.jengaBlockSkinGeometry = geoStr;
+            this.jengaBlockSkinData = ImageIO.read(skinDataIn);
 
         } catch (IOException err) {
             throw new IllegalStateException("Unable to load Jenga block model from resources");
@@ -167,12 +161,17 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
 
     protected void onFinishRecruitment() {
+        spawnBlock(origin.getLocation().add(0, 0, -BLOCK_SCALE));
         spawnBlock(origin.getLocation());
+        spawnBlock(origin.getLocation().add(0, 0, BLOCK_SCALE));
     }
 
     /** @return the id of the spawned block.*/
     protected String spawnBlock(Location position) {
-        String uuid = UUID.randomUUID().toString();
+        UUID uniqueID = UUID.randomUUID();
+        String uuid = uniqueID.toString();
+
+        Skin skin = generateNewSkin(uuid);
 
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<>("Pos")
@@ -184,44 +183,75 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                         .add(new DoubleTag("", 0))
                         .add(new DoubleTag("", 0)))
                 .putList(new ListTag<FloatTag>("Rotation")
-                        .add(new FloatTag("", (float) position.getYaw()))
-                        .add(new FloatTag("", (float) position.getPitch())))
+                        .add(new FloatTag("", 0f))
+                        .add(new FloatTag("", 0f)))
                 .putBoolean("npc", true)
                 .putFloat("scale", BLOCK_SCALE)
                 .putString(PERSISTANT_UUID_KEY, uuid);
         CompoundTag skinDataTag = new CompoundTag()
-                .putByteArray("Data", jengaBlockSkin.getSkinData().data)
-                .putInt("SkinImageWidth", jengaBlockSkin.getSkinData().width)
-                .putInt("SkinImageHeight", jengaBlockSkin.getSkinData().height)
-                .putString("ModelId", jengaBlockSkin.getSkinId())
-                .putString("CapeId", jengaBlockSkin.getCapeId())
-                .putByteArray("CapeData", jengaBlockSkin.getCapeData().data)
-                .putInt("CapeImageWidth", jengaBlockSkin.getCapeData().width)
-                .putInt("CapeImageHeight", jengaBlockSkin.getCapeData().height)
-                .putByteArray("SkinResourcePatch", jengaBlockSkin.getSkinResourcePatch().getBytes(StandardCharsets.UTF_8))
-                .putByteArray("GeometryData", jengaBlockSkin.getGeometryData().getBytes(StandardCharsets.UTF_8))
-                .putByteArray("AnimationData", jengaBlockSkin.getAnimationData().getBytes(StandardCharsets.UTF_8))
-                .putBoolean("PremiumSkin", jengaBlockSkin.isPremium())
-                .putBoolean("PersonaSkin", jengaBlockSkin.isPersona())
-                .putBoolean("CapeOnClassicSkin", jengaBlockSkin.isCapeOnClassic());
+                .putByteArray("Data", skin.getSkinData().data)
+                .putInt("SkinImageWidth", skin.getSkinData().width)
+                .putInt("SkinImageHeight", skin.getSkinData().height)
+                .putString("ModelId", skin.getSkinId())
+                .putString("CapeId", skin.getCapeId())
+                .putByteArray("CapeData", skin.getCapeData().data)
+                .putInt("CapeImageWidth", skin.getCapeData().width)
+                .putInt("CapeImageHeight", skin.getCapeData().height)
+                .putByteArray("SkinResourcePatch", skin.getSkinResourcePatch().getBytes(StandardCharsets.UTF_8))
+                .putByteArray("GeometryData", skin.getGeometryData().getBytes(StandardCharsets.UTF_8))
+                .putByteArray("AnimationData", skin.getAnimationData().getBytes(StandardCharsets.UTF_8))
+                .putBoolean("PremiumSkin", skin.isPremium())
+                .putBoolean("PersonaSkin", skin.isPersona())
+                .putBoolean("CapeOnClassicSkin", skin.isCapeOnClassic())
+                .putBoolean("IsTrustedSkin", true);
         nbt.putCompound("Skin", skinDataTag);
         nbt.putBoolean("ishuman", true);
 
         FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
+
         EntityHuman jengaHuman = new EntityHuman(chunk, nbt);
-        jengaHuman.setPositionAndRotation(position, position.getYaw(), position.getPitch());
+
+        jengaHuman.setPositionAndRotation(position, 0, 0);
         jengaHuman.setImmobile(true);
         jengaHuman.setNameTagAlwaysVisible(false);
         jengaHuman.setNameTagVisible(false);
         jengaHuman.setNameTag(uuid);
-        jengaHuman.setSkin(jengaBlockSkin);
         jengaHuman.setScale(BLOCK_SCALE);
 
         blockEntityIDs.put(uuid, jengaHuman.getId());
         jengaHuman.spawnToAll();
 
+        TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
+
+            for(Player player: jengaHuman.getViewers().values()) {
+                PlayerSkinPacket skinPacket = new PlayerSkinPacket();
+                skinPacket.uuid = jengaHuman.getUniqueId();
+                skinPacket.skin = jengaHuman.getSkin();
+                skinPacket.oldSkinName = jengaHuman.getSkin().getSkinId();
+                skinPacket.newSkinName = uuid;
+
+                player.dataPacket(skinPacket);
+
+                TabletopGamesNukkit.getLog().info(jengaHuman.getSkin().toString());
+            }
+
+        }, 20);
+
         return uuid;
     }
+
+    public Skin generateNewSkin(String uuid) {
+        Skin skin = new Skin();
+        skin.setGeometryData(jengaBlockSkinGeometry);
+        skin.setGeometryName("geometry.game.jenga_block");
+        skin.setSkinData(jengaBlockSkinData);
+        skin.generateSkinId(uuid);
+        skin.setTrusted(true);
+
+        return skin;
+    }
+
+
 
     @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
     public void onEntitySpawn(EntitySpawnEvent event) {
