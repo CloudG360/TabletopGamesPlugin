@@ -24,16 +24,17 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
         this.gameProfile = gameProfile;
         this.behaviour = behaviour;
-
-        WatchdogRule[] rules = behaviour.getRules();
-
-        this.rules = rules == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(rules));
         this.isRunning = true;
     }
 
     public void initRules() {
-        for(WatchdogRule rule: rules) {
-            rule.onStartWatchdog(this);
+        if(rules == null) {
+            WatchdogRule[] rules = behaviour.getRules();
+            this.rules = rules == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(rules));
+
+            for (WatchdogRule rule : rules) {
+                rule.onStartWatchdog(this);
+            }
         }
     }
 
