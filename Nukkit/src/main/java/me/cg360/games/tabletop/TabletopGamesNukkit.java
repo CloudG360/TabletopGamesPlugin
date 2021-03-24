@@ -1,11 +1,13 @@
 package me.cg360.games.tabletop;
 
+import cn.nukkit.entity.Entity;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
 import cn.nukkit.scheduler.ServerScheduler;
 import cn.nukkit.utils.Config;
 import me.cg360.games.tabletop.command.CommandTableGame;
 import me.cg360.games.tabletop.game.jenga.GBehaveJenga;
+import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameProfile;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
@@ -27,7 +29,6 @@ public class TabletopGamesNukkit extends PluginBase {
 
         try {
             tabletopGamesNukkit = this;
-
             loadConfiguration();
 
             // -- Set Managers --
@@ -47,9 +48,15 @@ public class TabletopGamesNukkit extends PluginBase {
             ));
 
 
+            // -- Register Entities --
+
+            Entity.registerEntity(EntityJengaBlock.class.getSimpleName(), EntityJengaBlock.class);
+
+
             // -- Register Commands --
 
             this.getServer().getCommandMap().register("ngapi", new CommandTableGame());
+
 
         } catch (Exception err){
             tabletopGamesNukkit = null;

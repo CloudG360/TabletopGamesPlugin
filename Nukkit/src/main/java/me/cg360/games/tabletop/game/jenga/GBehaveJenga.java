@@ -20,6 +20,7 @@ import cn.nukkit.network.protocol.PlayerListPacket;
 import cn.nukkit.network.protocol.PlayerSkinPacket;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
+import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;
@@ -50,9 +51,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     protected int inviteLengthTicks;
 
     protected RuleAcquirePlayersFromRadius recruitmentRule;
-
-    protected String jengaBlockSkinGeometry;
-    protected BufferedImage jengaBlockSkinData;
 
     protected HashMap<String, Long> blockEntityIDs;
 
@@ -94,29 +92,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                 String.format("%s%s%s has invited you to a game of %s%s! %sWould you like to join? You have %s%s%ss to join.",
                         TextFormat.AQUA, host.getName(), TextFormat.BLUE, TextFormat.AQUA, properties.getOrElse(GamePropertyKeys.DISPLAY_NAME, "Jenga"),
                         TextFormat.BLUE, TextFormat.AQUA, new DecimalFormat("0.0").format(((float) inviteLengthTicks) / 20f), TextFormat.BLUE);
-
-
-        // -- Generate Skin --
-
-        try {
-            InputStream skinGeoIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.json");
-            InputStream skinDataIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.png");
-
-            BufferedReader read = new BufferedReader(new InputStreamReader(skinGeoIn));
-            Iterator<String> i = read.lines().iterator();
-            String geoStr = "";
-
-            while (i.hasNext()) {
-                geoStr = geoStr.concat(i.next());
-                if(i.hasNext()) geoStr = geoStr.concat("\n"); // Add a newline unless the end has been reached.
-            }
-
-            this.jengaBlockSkinGeometry = geoStr;
-            this.jengaBlockSkinData = ImageIO.read(skinDataIn);
-
-        } catch (IOException err) {
-            throw new IllegalStateException("Unable to load Jenga block model from resources");
-        }
 
 
         // -- Enable Events --
@@ -171,8 +146,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         UUID uniqueID = UUID.randomUUID();
         String uuid = uniqueID.toString();
 
-        Skin skin = generateNewSkin(uuid);
-
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<>("Pos")
                         .add(new DoubleTag("", position.getX()))
@@ -188,28 +161,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                 .putBoolean("npc", true)
                 .putFloat("scale", BLOCK_SCALE)
                 .putString(PERSISTANT_UUID_KEY, uuid);
-        CompoundTag skinDataTag = new CompoundTag()
-                .putByteArray("Data", skin.getSkinData().data)
-                .putInt("SkinImageWidth", skin.getSkinData().width)
-                .putInt("SkinImageHeight", skin.getSkinData().height)
-                .putString("ModelId", skin.getSkinId())
-                .putString("CapeId", skin.getCapeId())
-                .putByteArray("CapeData", skin.getCapeData().data)
-                .putInt("CapeImageWidth", skin.getCapeData().width)
-                .putInt("CapeImageHeight", skin.getCapeData().height)
-                .putByteArray("SkinResourcePatch", skin.getSkinResourcePatch().getBytes(StandardCharsets.UTF_8))
-                .putByteArray("GeometryData", skin.getGeometryData().getBytes(StandardCharsets.UTF_8))
-                .putByteArray("AnimationData", skin.getAnimationData().getBytes(StandardCharsets.UTF_8))
-                .putBoolean("PremiumSkin", skin.isPremium())
-                .putBoolean("PersonaSkin", skin.isPersona())
-                .putBoolean("CapeOnClassicSkin", skin.isCapeOnClassic())
-                .putBoolean("IsTrustedSkin", true);
-        nbt.putCompound("Skin", skinDataTag);
         nbt.putBoolean("ishuman", true);
 
         FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
-
-        EntityHuman jengaHuman = new EntityHuman(chunk, nbt);
+        EntityJengaBlock jengaHuman = new EntityJengaBlock(chunk, nbt);
 
         jengaHuman.setPositionAndRotation(position, 0, 0);
         jengaHuman.setImmobile(true);
@@ -221,34 +176,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         blockEntityIDs.put(uuid, jengaHuman.getId());
         jengaHuman.spawnToAll();
 
-        TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
-
-            for(Player player: jengaHuman.getViewers().values()) {
-                PlayerSkinPacket skinPacket = new PlayerSkinPacket();
-                skinPacket.uuid = jengaHuman.getUniqueId();
-                skinPacket.skin = jengaHuman.getSkin();
-                skinPacket.oldSkinName = jengaHuman.getSkin().getSkinId();
-                skinPacket.newSkinName = uuid;
-
-                player.dataPacket(skinPacket);
-
-                TabletopGamesNukkit.getLog().info(jengaHuman.getSkin().toString());
-            }
-
-        }, 20);
-
         return uuid;
-    }
-
-    public Skin generateNewSkin(String uuid) {
-        Skin skin = new Skin();
-        skin.setGeometryData(jengaBlockSkinGeometry);
-        skin.setGeometryName("geometry.game.jenga_block");
-        skin.setSkinData(jengaBlockSkinData);
-        skin.generateSkinId(uuid);
-        skin.setTrusted(true);
-
-        return skin;
     }
 
 
