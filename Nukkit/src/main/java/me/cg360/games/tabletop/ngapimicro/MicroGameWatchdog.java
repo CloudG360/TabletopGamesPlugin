@@ -1,6 +1,9 @@
 package me.cg360.games.tabletop.ngapimicro;
 
 import cn.nukkit.Player;
+import cn.nukkit.utils.TextFormat;
+import me.cg360.games.tabletop.Util;
+import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import net.cg360.nsapi.commons.Check;
 
 import java.util.ArrayList;
@@ -66,6 +69,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
         if(!playerWatchdogs.containsKey(player)) {
             playerWatchdogs.put(player, this);
+            player.sendMessage(Util.fMessage(
+                    "JOIN",
+                    TextFormat.GREEN,
+                    String.format("You joined a game of %s'%s'.", TextFormat.AQUA, gameProfile.getProperties().getOrElse(GamePropertyKeys.DISPLAY_NAME, "???"))));
             getBehaviour().onPlayerCapture(player);
             return true;
         }
@@ -81,6 +88,10 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
         if(playerWatchdogs.containsKey(player) && (playerWatchdogs.get(player) == this)) { // Check player is actually in the lookup
             playerWatchdogs.remove(player);
             getBehaviour().onPlayerRelease(player);
+            player.sendMessage(Util.fMessage(
+                    "LEAVE",
+                    TextFormat.RED,
+                    String.format("You left a game of %s'%s'.", TextFormat.AQUA, gameProfile.getProperties().getOrElse(GamePropertyKeys.DISPLAY_NAME, "???"))));
         }
     }
 
