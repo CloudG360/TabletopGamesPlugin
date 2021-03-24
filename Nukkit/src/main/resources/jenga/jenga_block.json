@@ -1,0 +1,16 @@
+{
+	"format_version": "1.8.0",
+	"geometry.game.jenga_block": {
+		"texturewidth": 128,
+		"textureheight": 128,
+		"bones": [
+			{
+				"name": "root",
+				"pivot": [0, 0, 0],
+				"cubes": [
+					{"origin": [-24, 0, -8], "size": [48, 16, 16], "uv": [0, 0]}
+				]
+			}
+		]
+	}
+}

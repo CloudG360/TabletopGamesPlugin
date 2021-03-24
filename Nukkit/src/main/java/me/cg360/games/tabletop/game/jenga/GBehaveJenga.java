@@ -1,6 +1,7 @@
 package me.cg360.games.tabletop.game.jenga;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.data.Skin;
 import cn.nukkit.level.Location;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
@@ -15,8 +16,12 @@ import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GBehaveJenga extends MicroGameBehaviour {
 
@@ -29,10 +34,14 @@ public class GBehaveJenga extends MicroGameBehaviour {
 
     protected RuleAcquirePlayersFromRadius recruitmentRule;
 
+    protected Skin jengaBlockSkin = null;
+
     @Override
     public void init(Settings settings) {
         this.initSettings = settings;
         this.players = new ArrayList<>();
+
+        // -- Init settings + shortcuts --
 
         Settings properties = getWatchdog().getGameProfile().getProperties();
         Player host = settings.get(InitKeys.HOST_PLAYER);
@@ -48,8 +57,9 @@ public class GBehaveJenga extends MicroGameBehaviour {
             capturePlayer(host);
         }
 
-        this.inviteLengthTicks = Math.max(initSettings.getOrElse(InitKeys.INITIAL_INVITE_LENGTH, 400), 20);
+        // -- Handle invite setup --
 
+        this.inviteLengthTicks = Math.max(initSettings.getOrElse(InitKeys.INITIAL_INVITE_LENGTH, 400), 20);
         this.inviteMessage = host == null ?
                 // Null player host.
                 String.format("%sYou have been invited to a game of %s%s%s! Would you like to join? You have %s%s%ss to join.",
@@ -59,6 +69,36 @@ public class GBehaveJenga extends MicroGameBehaviour {
                 String.format("%s%s%s has invited you to a game of %s%s! %sWould you like to join? You have %s%s%ss to join.",
                         TextFormat.AQUA, host.getName(), TextFormat.BLUE, TextFormat.AQUA, properties.getOrElse(GamePropertyKeys.DISPLAY_NAME, "Jenga"),
                         TextFormat.BLUE, TextFormat.AQUA, new DecimalFormat("0.0").format(((float) inviteLengthTicks) / 20f), TextFormat.BLUE);
+
+
+        // -- Generate Skin --
+
+        try {
+            this.jengaBlockSkin = new Skin();
+            InputStream skinGeoIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.json");
+            InputStream skinDataIn = TabletopGamesNukkit.get().getResource("jenga/jenga_block.png");
+
+            BufferedReader read = new BufferedReader(new InputStreamReader(skinGeoIn));
+            Iterator<String> i = read.lines().iterator();
+            String geoStr = "";
+
+            while (i.hasNext()) {
+                geoStr = geoStr.concat(i.next());
+                if(i.hasNext()) geoStr = geoStr.concat("\n"); // Add a newline unless the end has been reached.
+            }
+
+            BufferedImage skinData = ImageIO.read(skinDataIn);
+
+            this.jengaBlockSkin.setArmSize("wide");
+            this.jengaBlockSkin.setTrusted(true);
+            this.jengaBlockSkin.setGeometryData(geoStr);
+            this.jengaBlockSkin.setGeometryName("geometry.game.jenga_block");
+            this.jengaBlockSkin.setSkinData(skinData);
+            this.jengaBlockSkin.generateSkinId("JengaBlock");
+
+        } catch (IOException err) {
+            throw new IllegalStateException("Unable to load Jenga block model from resources");
+        }
     }
 
 
