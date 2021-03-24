@@ -8,14 +8,7 @@ import net.cg360.nsapi.commons.Check;
  */
 public abstract class WatchdogRule {
 
-    public MicroGameWatchdog<?> watchdog;
-
-    public WatchdogRule(MicroGameWatchdog<?> watchdog) {
-        Check.nullParam(watchdog, "watchdog");
-        this.watchdog = watchdog;
-    }
-
-    protected abstract void onStartWatchdog();
+    protected abstract void onStartWatchdog(MicroGameWatchdog<?> watchdog);
     protected abstract void onStopWatchdog();
 
 

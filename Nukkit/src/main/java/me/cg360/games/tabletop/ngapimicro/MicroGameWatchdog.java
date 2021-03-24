@@ -33,7 +33,7 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
 
     public void initRules() {
         for(WatchdogRule rule: rules) {
-            rule.onStartWatchdog();
+            rule.onStartWatchdog(this);
         }
     }
 

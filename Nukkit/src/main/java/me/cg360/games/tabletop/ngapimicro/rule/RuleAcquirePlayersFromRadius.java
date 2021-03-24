@@ -11,7 +11,6 @@ import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import net.cg360.nsapi.commons.Check;
-import net.cg360.nsapi.commons.Utility;
 
 import java.util.HashMap;
 
@@ -24,11 +23,11 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
     protected boolean sendInvitesImmediately;
     protected boolean isEnabled;
 
+    protected MicroGameWatchdog<?> watchdog;
     protected HashMap<Integer, Player> inviteMap;
 
 
-    public RuleAcquirePlayersFromRadius(MicroGameWatchdog<?> watchdog, String inviteMessage, Location origin, double radius, boolean sendInvitesImmediately) {
-        super(watchdog);
+    public RuleAcquirePlayersFromRadius(String inviteMessage, Location origin, double radius, boolean sendInvitesImmediately) {
         Check.nullParam(origin, "origin");
 
         this.origin = origin;
@@ -38,14 +37,14 @@ public class RuleAcquirePlayersFromRadius extends WatchdogRule {
         this.sendInvitesImmediately = sendInvitesImmediately;
         this.isEnabled = true;
 
-
         this.inviteMap = new HashMap<>();
     }
 
 
 
     @Override
-    protected void onStartWatchdog() {
+    protected void onStartWatchdog(MicroGameWatchdog<?> watchdog) {
+        this.watchdog = watchdog;
         if(sendInvitesImmediately) sendInvites();
     }
 

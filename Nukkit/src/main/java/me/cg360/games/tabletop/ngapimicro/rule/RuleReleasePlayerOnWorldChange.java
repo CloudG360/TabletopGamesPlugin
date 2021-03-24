@@ -13,12 +13,11 @@ import java.util.HashMap;
 
 public class RuleReleasePlayerOnWorldChange extends WatchdogRule implements Listener {
 
-    public RuleReleasePlayerOnWorldChange(MicroGameWatchdog<?> watchdog) {
-        super(watchdog);
-    }
+    protected MicroGameWatchdog<?> watchdog;
 
     @Override
-    protected void onStartWatchdog() {
+    protected void onStartWatchdog(MicroGameWatchdog<?> watchdog) {
+        this.watchdog = watchdog;
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
     }
 

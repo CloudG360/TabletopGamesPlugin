@@ -64,14 +64,14 @@ public class GBehaveJenga extends MicroGameBehaviour {
 
     @Override
     public WatchdogRule[] getRules() {
-        this.recruitmentRule = new RuleAcquirePlayersFromRadius(getWatchdog(), inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
+        this.recruitmentRule = new RuleAcquirePlayersFromRadius(inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
 
         TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
             this.recruitmentRule.setEnabled(false); // Disable invites after invite interval, open for at least 1 second.
         }, inviteLengthTicks);
 
         return new WatchdogRule[] {
-                new RuleReleasePlayerOnWorldChange(getWatchdog()),
+                new RuleReleasePlayerOnWorldChange(),
                 this.recruitmentRule
         };
     }
