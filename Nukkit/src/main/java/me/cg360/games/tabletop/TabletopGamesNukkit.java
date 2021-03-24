@@ -4,7 +4,11 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
 import cn.nukkit.scheduler.ServerScheduler;
 import cn.nukkit.utils.Config;
+import me.cg360.games.tabletop.command.CommandTableGame;
+import me.cg360.games.tabletop.game.jenga.GBehaveJenga;
+import me.cg360.games.tabletop.ngapimicro.MicroGameProfile;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
+import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.io.File;
@@ -29,13 +33,23 @@ public class TabletopGamesNukkit extends PluginBase {
             // -- Set Managers --
 
             this.microGameRegistry = new MicroGameRegistry();
-
             this.microGameRegistry.setAsPrimaryRegistry();
 
-            // -- Register listeners --
+
+            // -- Register Games --
+
+            this.microGameRegistry.register(new MicroGameProfile<>(
+                    Util.NAME.id("jenga"), GBehaveJenga.class,
+                    new Settings()
+                            .set(GamePropertyKeys.DISPLAY_NAME, "Jenga")
+                            .set(GamePropertyKeys.DESCRIPTION, "Try to remove blocks from a tall tower without it toppling on your turn!")
+                            .set(GamePropertyKeys.AUTHORS, "CG360")
+            ));
 
 
             // -- Register Commands --
+
+            this.getServer().getCommandMap().register("ngapi", new CommandTableGame());
 
         } catch (Exception err){
             tabletopGamesNukkit = null;

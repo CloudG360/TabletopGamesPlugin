@@ -3,10 +3,14 @@ package me.cg360.games.tabletop;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.utils.TextFormat;
 import net.cg360.nsapi.commons.data.keyvalue.Key;
+import net.cg360.nsapi.commons.id.Namespace;
 
 public class Util {
 
     public static final TextFormat DEFAULT_TEXT_COLOUR = TextFormat.GRAY;
+
+    public static final Namespace NAME = new Namespace("tabletop");
+
     public static final String BASE_PERMISSION = "tabletop";
     public static final String COMMAND_PERMISSION = BASE_PERMISSION+".command";
 
