@@ -51,8 +51,12 @@ public class GBehaveJenga extends MicroGameBehaviour {
 
     @Override
     public void init(Settings settings) {
+
+        // -- Basic inits --
+
         this.initSettings = settings;
         this.players = new ArrayList<>();
+        this.persistentBlockIDs = new ArrayList<>();
 
         // -- Init settings + shortcuts --
 
