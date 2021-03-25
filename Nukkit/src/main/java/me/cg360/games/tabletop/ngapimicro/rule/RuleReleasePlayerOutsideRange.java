@@ -1,12 +1,14 @@
 package me.cg360.games.tabletop.ngapimicro.rule;
 
 import cn.nukkit.Player;
+import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.Listener;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.ParticleEffect;
 import cn.nukkit.level.particle.Particle;
+import cn.nukkit.level.particle.RedstoneParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.scheduler.Task;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
@@ -52,15 +54,14 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
                         int pointCount = (int) Math.floor(circ * POINT_STEP);
                         double angleStep = 360d / pointCount;
 
-                        Vector3 forward = new Vector3(1, 0, 0);
-
                         for(double angle = 0; angle < 360d; angle += angleStep){
-                            Vector3 direction = forward.multiply(Math.cos(angle)).normalize();
+                            Vector3 direction = new Vector3(Math.sin(angle), 0, Math.cos(angle));
                             Vector3 radiusDelta = direction.multiply(radius);
 
-                            Location loc = origin.getLocation().add(radiusDelta);
-                            Entity.entityCount++; // Increment before using/
-                            loc.getLevel().addParticleEffect(loc, ParticleEffect.REDSTONE_TORCH_DUST, Entity.entityCount, origin.getLevel().getDimension(), watchdog.getPlayers());
+                            TabletopGamesNukkit.getLog().info("Delta: "+radiusDelta.toString());
+
+                            Location loc = origin.getLocation().add(0, 1, 0).add(radiusDelta);
+                            loc.getLevel().addParticle(new RedstoneParticle(loc, 20));
                         }
                     }
 
@@ -68,7 +69,7 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
 
             }
 
-        }, 1, 1);
+        }, 5, 20);
     }
 
     @Override

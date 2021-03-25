@@ -91,7 +91,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     @Override
     public WatchdogRule[] getRules() {
         this.recruitmentRule = new RuleAcquirePlayersFromRadius(inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
-        this.departureRule = new RuleReleasePlayerOutsideRange(origin, initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 20d), true);
+        this.departureRule = new RuleReleasePlayerOutsideRange(origin, initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 15d), true);
 
         TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
 
