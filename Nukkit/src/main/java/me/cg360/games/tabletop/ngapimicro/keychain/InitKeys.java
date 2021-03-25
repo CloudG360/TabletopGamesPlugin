@@ -13,6 +13,9 @@ public class InitKeys {
     public static final Key<Location> ORIGIN = new Key<>("origin");
 
     // How far around the origin should invites be sent to.
+    public static final Key<Double> PLAY_AREA_RADIUS = new Key<>("play_area_radius");
+
+    // How far around the origin should invites be sent to.
     public static final Key<Double> INVITE_RADIUS = new Key<>("invite_radius");
 
     // How long (in ticks) should "yes" responses be accepted for.
