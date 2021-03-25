@@ -3,6 +3,7 @@ package me.cg360.games.tabletop.ngapimicro.rule.boundary.circular;
 import cn.nukkit.Player;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.particle.RedstoneParticle;
+import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.scheduler.Task;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
@@ -28,12 +29,14 @@ public class RulePushIntoCircularBoundary extends RuleAbstractCircularBoundary {
                 if(watchdog.isRunning()) {
 
                     for(Player player: watchdog.getPlayers()) {
+                        Vector2 player2D = new Vector2(player.getX(), player.getZ());
+                        Vector2 origin2D = new Vector2(origin.getX(), origin.getZ());
 
-                        if(player.distance(origin) > radius) {
-                            Vector3 delta = origin.getLocation().subtract(player.getLocation());
-                            Vector3 direction = new Vector3(delta.getX(), 0, delta.getZ()).normalize(); // Ignore Y.
+                        if(player2D.distance(origin2D) > radius) {
+                            Vector2 delta = origin2D.subtract(player2D);
+                            Vector2 direction = new Vector2(delta.getX(), delta.getY()).normalize(); // Ignore Y.
 
-                            Vector3 result = new Vector3(direction.getX() * force.getX(), force.getY(), direction.getZ() * force.getZ());
+                            Vector3 result = new Vector3(direction.getX() * force.getX(), force.getY(), direction.getY() * force.getZ());
                             player.setMotion(result);
                         }
                     }
