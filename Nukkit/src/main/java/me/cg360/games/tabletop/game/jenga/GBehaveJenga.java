@@ -19,7 +19,7 @@ import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleAcquirePlayersFromRadius;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
-import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOutsideRange;
+import me.cg360.games.tabletop.ngapimicro.rule.RuleAbstractCircularBoundary;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.text.DecimalFormat;
@@ -38,7 +38,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     protected int inviteLengthTicks;
 
     protected RuleAcquirePlayersFromRadius recruitmentRule;
-    protected RuleReleasePlayerOutsideRange departureRule;
+    protected RuleAbstractCircularBoundary departureRule;
 
     protected HashMap<String, Long> blockEntityIDs;
 
@@ -91,7 +91,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     @Override
     public WatchdogRule[] getRules() {
         this.recruitmentRule = new RuleAcquirePlayersFromRadius(inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
-        this.departureRule = new RuleReleasePlayerOutsideRange(origin, initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 15d), true);
+        this.departureRule = new RuleAbstractCircularBoundary(origin, initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 15d), true);
 
         TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
 

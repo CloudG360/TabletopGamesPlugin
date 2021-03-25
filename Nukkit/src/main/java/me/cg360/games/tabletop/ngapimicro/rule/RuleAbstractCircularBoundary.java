@@ -1,13 +1,8 @@
 package me.cg360.games.tabletop.ngapimicro.rule;
 
-import cn.nukkit.Player;
-import cn.nukkit.block.Block;
-import cn.nukkit.entity.Entity;
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.Listener;
 import cn.nukkit.level.Location;
-import cn.nukkit.level.ParticleEffect;
-import cn.nukkit.level.particle.Particle;
 import cn.nukkit.level.particle.RedstoneParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.scheduler.Task;
@@ -16,10 +11,7 @@ import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import net.cg360.nsapi.commons.Check;
 
-import java.text.DecimalFormat;
-import java.util.HashMap;
-
-public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Listener {
+public abstract class RuleAbstractCircularBoundary extends WatchdogRule implements Listener {
 
     public static final double POINT_STEP = 0.6;
 
@@ -29,17 +21,16 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
     protected double radius;
     protected boolean areEdgeParticlesEnabled;
 
-    public RuleReleasePlayerOutsideRange(Location origin, double radius, boolean areEdgeParticlesEnabled){
+    public RuleAbstractCircularBoundary(Location origin, double radius, boolean areEdgeParticlesEnabled){
         Check.nullParam(origin, "origin");
 
         this.origin = origin;
         this.areEdgeParticlesEnabled = areEdgeParticlesEnabled;
         this.setRadius(radius);
-
     }
 
     @Override
-    protected void onStartWatchdog(MicroGameWatchdog<?> watchdog) {
+    protected final void onStartWatchdog(MicroGameWatchdog<?> watchdog) {
         this.watchdog = watchdog;
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
 
@@ -73,15 +64,21 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
             }
 
         }, 5, 14);
+
+        onStartBoundaryWatchdog();
     }
 
     @Override
-    protected void onStopWatchdog() {
+    protected final void onStopWatchdog() {
         HandlerList.unregisterAll(this);
+        onStopBoundaryWatchdog();
     }
 
+    // \/\/\/ Ensures the base behaviours don't change but offers a way to add onto the behaviour
+    protected abstract void onStartBoundaryWatchdog();
+    protected abstract void onStopBoundaryWatchdog();
 
 
-    public void setRadius(double radius) { this.radius = radius >= 0 ? radius : 0; }
-    public void setRenderEdgeParticlesEnabled(boolean renderEdgeParticles) { this.areEdgeParticlesEnabled = renderEdgeParticles; }
+    public final void setRadius(double radius) { this.radius = radius >= 0 ? radius : 0; }
+    public final void setRenderEdgeParticlesEnabled(boolean renderEdgeParticles) { this.areEdgeParticlesEnabled = renderEdgeParticles; }
 }
