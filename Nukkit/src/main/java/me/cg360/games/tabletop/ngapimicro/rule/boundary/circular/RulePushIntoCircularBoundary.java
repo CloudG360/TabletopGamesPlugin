@@ -15,7 +15,7 @@ public class RulePushIntoCircularBoundary extends RuleAbstractCircularBoundary {
     public RulePushIntoCircularBoundary(Location origin, double radius, boolean areEdgeParticlesEnabled) { this(origin, radius, areEdgeParticlesEnabled, null); }
     public RulePushIntoCircularBoundary(Location origin, double radius, boolean areEdgeParticlesEnabled, Vector3 force) {
         super(origin, radius, areEdgeParticlesEnabled);
-        this.force = force == null ? new Vector3(0.6f, 0.2f, 0.6f) : force;
+        this.force = force == null ? new Vector3(1.1f, 0.4f, 1.1f) : force;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class RulePushIntoCircularBoundary extends RuleAbstractCircularBoundary {
 
             }
 
-        }, 5, 10);
+        }, 5, 5);
     }
 
     public void setForce(Vector3 force) { this.force = force; }
