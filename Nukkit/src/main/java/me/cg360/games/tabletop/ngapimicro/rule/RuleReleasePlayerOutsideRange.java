@@ -16,6 +16,7 @@ import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import net.cg360.nsapi.commons.Check;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 
 public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Listener {
@@ -54,8 +55,9 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
                         int pointCount = (int) Math.floor(circ * POINT_STEP);
                         double angleStep = 360d / pointCount;
 
-                        for(double angle = 0; angle < 360d; angle += angleStep){
-                            Vector3 direction = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+                        for(double angle = 0d; angle < 360d; angle += angleStep){
+                            double angleRadians = Math.toRadians(angle);
+                            Vector3 direction = new Vector3(Math.sin(angleRadians), 0, Math.cos(angleRadians));
                             Vector3 radiusDelta = direction.multiply(radius);
 
                             Location loc = origin.getLocation().add(radiusDelta);
