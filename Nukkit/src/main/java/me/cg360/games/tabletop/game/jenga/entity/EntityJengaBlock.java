@@ -1,9 +1,16 @@
 package me.cg360.games.tabletop.game.jenga.entity;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.EventPriority;
+import cn.nukkit.event.HandlerList;
+import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.level.ChunkUnloadEvent;
+import cn.nukkit.event.level.LevelUnloadEvent;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
@@ -16,9 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
 
-public class EntityJengaBlock extends EntityHuman {
+public class EntityJengaBlock extends EntityHuman implements Listener {
 
     protected static final String GEOMETRY;
     protected static final BufferedImage DATA;
@@ -80,6 +88,14 @@ public class EntityJengaBlock extends EntityHuman {
         this.namedTag.putCompound("Skin", skinDataTag);
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
+
+        TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
+    }
+
+    @Override
+    public void close() {
+        if(!closed) HandlerList.unregisterAll(this);
+        super.close();
     }
 
     @Override
@@ -121,5 +137,23 @@ public class EntityJengaBlock extends EntityHuman {
     @Override
     public boolean attack(float damage) {
         return false;
+    }
+
+    @Override public float getHeight() { return 1f; }
+    @Override public float getWidth() { return 1f; }
+    @Override public float getLength() { return 3f; }
+
+    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        for (Entity entity: new ArrayList<>(event.getChunk().getEntities().values())) {
+            if(entity == this) this.close();
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    public void onLevelUnload(LevelUnloadEvent event) {
+        for (Entity entity : event.getLevel().getEntities()) {
+            if(entity == this) this.close();
+        }
     }
 }

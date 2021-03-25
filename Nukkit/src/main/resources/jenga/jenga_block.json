@@ -5,7 +5,7 @@
 		"textureheight": 128,
 		"bones": [
 			{
-				"name": "root",
+				"name": "head",
 				"pivot": [0, 0, 0],
 				"cubes": [
 					{"origin": [-24, 0, -8], "size": [48, 16, 16], "uv": [0, 0]}

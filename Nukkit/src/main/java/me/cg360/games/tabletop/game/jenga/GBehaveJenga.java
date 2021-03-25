@@ -1,25 +1,13 @@
 package me.cg360.games.tabletop.game.jenga;
 
 import cn.nukkit.Player;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.EntityHuman;
-import cn.nukkit.entity.data.Skin;
-import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.entity.EntityDamageEvent;
-import cn.nukkit.event.entity.EntitySpawnEvent;
-import cn.nukkit.event.level.ChunkUnloadEvent;
-import cn.nukkit.event.level.LevelUnloadEvent;
-import cn.nukkit.event.server.ServerStopEvent;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
-import cn.nukkit.network.protocol.PlayerListPacket;
-import cn.nukkit.network.protocol.PlayerSkinPacket;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
@@ -33,16 +21,12 @@ import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import net.cg360.nsapi.commons.data.Settings;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 
 public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
-    protected static final String PERSISTANT_UUID_KEY = "human_uuid";
+
     public static final float BLOCK_SCALE = 1f;
 
     protected Settings initSettings;
@@ -138,15 +122,41 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
 
     protected void onFinishRecruitment() {
-        spawnBlock(origin.getLocation().add(0, 0, -BLOCK_SCALE));
-        spawnBlock(origin.getLocation());
-        spawnBlock(origin.getLocation().add(0, 0, BLOCK_SCALE));
+        spawnBlock(origin.getLocation().add(0, 0, -BLOCK_SCALE), false);
+        spawnBlock(origin.getLocation().add(0, 0, 0), false);
+        spawnBlock(origin.getLocation().add(0, 0, BLOCK_SCALE), false);
+
+        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 1, 0), true);
+        spawnBlock(origin.getLocation().add(0, 1, 0), true);
+        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 1, 0), true);
+
+        spawnBlock(origin.getLocation().add(0, 2, -BLOCK_SCALE), false);
+        spawnBlock(origin.getLocation().add(0, 2, 0), false);
+        spawnBlock(origin.getLocation().add(0, 2, BLOCK_SCALE), false);
+
+        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 3, 0), true);
+        spawnBlock(origin.getLocation().add(0, 3, 0), true);
+        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 3, 0), true);
+
+        spawnBlock(origin.getLocation().add(0, 4, -BLOCK_SCALE), false);
+        spawnBlock(origin.getLocation().add(0, 4, 0), false);
+        spawnBlock(origin.getLocation().add(0, 4, BLOCK_SCALE), false);
+
+        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 5, 0), true);
+        spawnBlock(origin.getLocation().add(0, 5, 0), true);
+        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 5, 0), true);
+
+        spawnBlock(origin.getLocation().add(0, 6, -BLOCK_SCALE), false);
+        spawnBlock(origin.getLocation().add(0, 6, 0), false);
+        spawnBlock(origin.getLocation().add(0, 6, BLOCK_SCALE), false);
+
+        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 7, 0), true);
+        spawnBlock(origin.getLocation().add(0, 7, 0), true);
+        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 7, 0), true);
     }
 
     /** @return the id of the spawned block.*/
-    protected String spawnBlock(Location position) {
-        UUID uniqueID = UUID.randomUUID();
-        String uuid = uniqueID.toString();
+    protected EntityJengaBlock spawnBlock(Location position, boolean alternate) {
 
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<>("Pos")
@@ -158,84 +168,23 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                         .add(new DoubleTag("", 0))
                         .add(new DoubleTag("", 0)))
                 .putList(new ListTag<FloatTag>("Rotation")
-                        .add(new FloatTag("", 0f))
+                        .add(new FloatTag("", alternate ? 90f : 0f))
                         .add(new FloatTag("", 0f)))
                 .putBoolean("npc", true)
-                .putFloat("scale", BLOCK_SCALE)
-                .putString(PERSISTANT_UUID_KEY, uuid);
+                .putFloat("scale", BLOCK_SCALE);
         nbt.putBoolean("ishuman", true);
 
         FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
         EntityJengaBlock jengaHuman = new EntityJengaBlock(chunk, nbt);
 
-        jengaHuman.setPositionAndRotation(position, 0, 0);
+        jengaHuman.setPositionAndRotation(position, alternate ? 90f : 0f, 0);
         jengaHuman.setImmobile(true);
         jengaHuman.setNameTagAlwaysVisible(false);
         jengaHuman.setNameTagVisible(false);
-        jengaHuman.setNameTag(uuid);
         jengaHuman.setScale(BLOCK_SCALE);
 
-        blockEntityIDs.put(uuid, jengaHuman.getId());
         jengaHuman.spawnToAll();
 
-        return uuid;
-    }
-
-
-
-    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
-    public void onEntitySpawn(EntitySpawnEvent event) {
-        CompoundTag nbt = event.getEntity().namedTag;
-
-        if((nbt != null)) {
-            String uuid = nbt.getString(PERSISTANT_UUID_KEY);
-
-            if((uuid != null) && (uuid.length() != 0)) {
-
-                if(blockEntityIDs.containsKey(uuid)) {
-                    blockEntityIDs.put(uuid, event.getEntity().getId()); // Update entity ID in the case it's somehow overriden?
-                }
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
-    public void onChunkUnload(ChunkUnloadEvent event) {
-
-        for (Entity entity: new ArrayList<>(event.getChunk().getEntities().values())) {
-            CompoundTag nbt = entity.namedTag;
-
-            if((nbt != null)) {
-                String uuid = nbt.getString(PERSISTANT_UUID_KEY);
-
-                if((uuid != null) && (uuid.length() != 0)) {
-
-                    if(blockEntityIDs.containsKey(uuid)) {
-                        entity.close();
-                    }
-                }
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
-    public void onChunkUnload(LevelUnloadEvent event) {
-
-        if(event.getLevel() == origin.getLevel()) {
-            for (Entity entity : origin.getLevel().getEntities()) {
-                CompoundTag nbt = entity.namedTag;
-
-                if ((nbt != null)) {
-                    String uuid = nbt.getString(PERSISTANT_UUID_KEY);
-
-                    if ((uuid != null) && (uuid.length() != 0)) {
-
-                        if (blockEntityIDs.containsKey(uuid)) {
-                            entity.close();
-                        }
-                    }
-                }
-            }
-        }
+        return jengaHuman;
     }
 }
