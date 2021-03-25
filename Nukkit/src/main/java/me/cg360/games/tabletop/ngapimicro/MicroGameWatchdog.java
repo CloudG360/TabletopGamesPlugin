@@ -113,6 +113,20 @@ public final class MicroGameWatchdog<T extends MicroGameBehaviour> {
         }
     }
 
+    /** @return the players captured by this watchdog. */
+    public ArrayList<Player> getPlayers() {
+        ArrayList<Player> players = new ArrayList<>();
+
+        for(Map.Entry<Player, MicroGameWatchdog<?>> entry: playerWatchdogs.entrySet()) {
+
+            if(entry.getValue() == this) {
+                players.add(entry.getKey());
+            }
+        }
+
+        return players;
+    }
+
 
 
     public MicroGameProfile<T> getGameProfile() { return gameProfile; }
