@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.ngapimicro.rule;
+package me.cg360.games.tabletop.ngapimicro.rule.boundary;
 
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.Listener;
@@ -75,8 +75,8 @@ public abstract class RuleAbstractCircularBoundary extends WatchdogRule implemen
     }
 
     // \/\/\/ Ensures the base behaviours don't change but offers a way to add onto the behaviour
-    protected abstract void onStartBoundaryWatchdog();
-    protected abstract void onStopBoundaryWatchdog();
+    protected void onStartBoundaryWatchdog() { }
+    protected void onStopBoundaryWatchdog() { }
 
 
     public final void setRadius(double radius) { this.radius = radius >= 0 ? radius : 0; }
