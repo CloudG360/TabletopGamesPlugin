@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Listener {
 
-    public static final double POINT_STEP = 2d / 3d;
+    public static final double POINT_STEP = 0.6;
 
     protected MicroGameWatchdog<?> watchdog;
 
@@ -58,10 +58,11 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
                             Vector3 direction = new Vector3(Math.sin(angle), 0, Math.cos(angle));
                             Vector3 radiusDelta = direction.multiply(radius);
 
-                            TabletopGamesNukkit.getLog().info("Delta: "+radiusDelta.toString());
-
-                            Location loc = origin.getLocation().add(0, 1, 0).add(radiusDelta);
-                            loc.getLevel().addParticle(new RedstoneParticle(loc, 20));
+                            Location loc = origin.getLocation().add(radiusDelta);
+                            loc.getLevel().addParticle(new RedstoneParticle(loc.add(0, 0.5, 0), 20), watchdog.getPlayers());
+                            loc.getLevel().addParticle(new RedstoneParticle(loc.add(0, 1, 0), 20), watchdog.getPlayers());
+                            loc.getLevel().addParticle(new RedstoneParticle(loc.add(0, 1.5, 0), 20), watchdog.getPlayers());
+                            loc.getLevel().addParticle(new RedstoneParticle(loc.add(0, 2, 0), 20), watchdog.getPlayers());
                         }
                     }
 
@@ -69,7 +70,7 @@ public class RuleReleasePlayerOutsideRange extends WatchdogRule implements Liste
 
             }
 
-        }, 5, 20);
+        }, 5, 14);
     }
 
     @Override
