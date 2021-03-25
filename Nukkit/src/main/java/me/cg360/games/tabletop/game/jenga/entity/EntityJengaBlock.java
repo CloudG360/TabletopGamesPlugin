@@ -11,6 +11,7 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.level.ChunkUnloadEvent;
 import cn.nukkit.event.level.LevelUnloadEvent;
+import cn.nukkit.event.server.ServerStopEvent;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
@@ -143,17 +144,22 @@ public class EntityJengaBlock extends EntityHuman implements Listener {
     @Override public float getWidth() { return 1f; }
     @Override public float getLength() { return 3f; }
 
-    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onChunkUnload(ChunkUnloadEvent event) {
         for (Entity entity: new ArrayList<>(event.getChunk().getEntities().values())) {
             if(entity == this) this.close();
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST) // Should be *sure* the chunk isn't being unloaded.
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onLevelUnload(LevelUnloadEvent event) {
         for (Entity entity : event.getLevel().getEntities()) {
             if(entity == this) this.close();
         }
+    }
+
+    @EventHandler
+    public void onServerStop(ServerStopEvent event) {
+        this.close();
     }
 }
