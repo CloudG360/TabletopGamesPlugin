@@ -5,6 +5,7 @@ import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.level.Location;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -60,26 +61,26 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
 
     protected EntityJengaBlockCollider(EntityVisualJengaBlock jengaBlockParent, double yawParentOffset, double distance) {
         super(jengaBlockParent.getChunk(), generateNBTFromParent(jengaBlockParent));
-        this.jengaBlockParent = jengaBlockParent;
+        this.jengaBlockParent = null;
         this.yawParentOffset = yawParentOffset;
         this.distance = distance;
     }
 
-    private static CompoundTag generateNBTFromParent(EntityVisualJengaBlock parent) {
+    private static CompoundTag generateNBTFromParent(EntityVisualJengaBlock jengaBlockParent) {
         return new CompoundTag()
                 .putList(new ListTag<>("Pos")
-                        .add(new DoubleTag("", parent.getX()))
-                        .add(new DoubleTag("", parent.getY()))
-                        .add(new DoubleTag("", parent.getZ())))
+                        .add(new DoubleTag("", jengaBlockParent.getX()))
+                        .add(new DoubleTag("", jengaBlockParent.getY()))
+                        .add(new DoubleTag("", jengaBlockParent.getZ())))
                 .putList(new ListTag<DoubleTag>("Motion")
-                        .add(new DoubleTag("", parent.getMotion().getX()))
-                        .add(new DoubleTag("", parent.getMotion().getY()))
-                        .add(new DoubleTag("", parent.getMotion().getZ())))
+                        .add(new DoubleTag("", jengaBlockParent.getMotion().getX()))
+                        .add(new DoubleTag("", jengaBlockParent.getMotion().getY()))
+                        .add(new DoubleTag("", jengaBlockParent.getMotion().getZ())))
                 .putList(new ListTag<FloatTag>("Rotation")
-                        .add(new FloatTag("", (float) parent.getYaw()))
-                        .add(new FloatTag("", (float) parent.getPitch())))
+                        .add(new FloatTag("", (float) jengaBlockParent.getYaw()))
+                        .add(new FloatTag("", (float) jengaBlockParent.getPitch())))
                 .putBoolean("npc", true)
-                .putFloat("scale", parent.getScale());
+                .putFloat("scale", jengaBlockParent.getScale());
     }
 
 
@@ -110,7 +111,7 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
         this.namedTag.putCompound("Skin", skinDataTag);
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
-        updateAngleToParent();
+        //updateAngleToParent();
     }
 
     @Override

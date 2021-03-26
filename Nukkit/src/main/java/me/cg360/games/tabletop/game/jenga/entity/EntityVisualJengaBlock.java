@@ -91,10 +91,11 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
 
-
-        this.colliders.add(new EntityJengaBlockCollider(this, 0, 1));
-        this.colliders.add(new EntityJengaBlockCollider(this, 0, 0));
-        this.colliders.add(new EntityJengaBlockCollider(this, 180, 1));
+        TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
+            this.colliders.add(new EntityJengaBlockCollider(this, 0, 1));
+            this.colliders.add(new EntityJengaBlockCollider(this, 0, 0));
+            this.colliders.add(new EntityJengaBlockCollider(this, 180, 1));
+        }, 1);
 
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
     }
@@ -138,19 +139,31 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
     @Override // Calculate offsets.
     public boolean setPosition(Vector3 pos) {
         boolean result = super.setPosition(pos);
-        for (EntityJengaBlockCollider collider : colliders) collider.updateAngleToParent();
+        if(colliders != null) {
+            for (EntityJengaBlockCollider collider : colliders) {
+                collider.updateAngleToParent();
+            }
+        }
         return result;
     }
 
     @Override
     public void setRotation(double yaw, double pitch) {
         super.setRotation(yaw, pitch);
-        for (EntityJengaBlockCollider collider : colliders) collider.updateAngleToParent();
+        if(colliders != null) {
+            for (EntityJengaBlockCollider collider : colliders) {
+                collider.updateAngleToParent();
+            }
+        }
     }
 
     @Override
     public boolean setMotion(Vector3 motion) {
-        for (EntityJengaBlockCollider collider : colliders) collider.setMotion(motion);
+        if(colliders != null) {
+            for (EntityJengaBlockCollider collider : colliders) {
+                collider.setMotion(motion);
+            }
+        }
         return super.setMotion(motion);
     }
 
