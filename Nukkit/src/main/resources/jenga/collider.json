@@ -1,0 +1,14 @@
+{
+	"format_version": "1.8.0",
+	"geometry.game.collider": {
+		"texturewidth": 64,
+		"textureheight": 64,
+		"bones": [
+			{
+				"name": "head",
+				"pivot": [0, 0, 0],
+				"cubes": []
+			}
+		]
+	}
+}

@@ -9,7 +9,7 @@ import cn.nukkit.nbt.tag.*;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.Util;
-import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
+import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;
@@ -20,7 +20,6 @@ import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RulePushIntoCircularBoundary;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RuleReleasePlayerOutsideCircularBoundary;
-import net.cg360.nsapi.commons.Utility;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.text.DecimalFormat;
@@ -141,7 +140,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     protected void onFinishRecruitment() {
 
-        this.topTowerLayer =  new JengaLayer(origin, 1f/3, false);
+        this.topTowerLayer =  new JengaLayer(origin, 2/3f, false);
         topTowerLayer.fillLayer();
 
         for(int i = 0; i < 9; i++) {
@@ -165,9 +164,9 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     @EventHandler
     public void onBlockDamage(EntityDamageByEntityEvent event) {
 
-        if((event.getDamager() instanceof Player) && (event.getEntity() instanceof EntityJengaBlock)) {
+        if((event.getDamager() instanceof Player) && (event.getEntity() instanceof EntityVisualJengaBlock)) {
             Player player = (Player) event.getDamager();
-            EntityJengaBlock jengaBlock = (EntityJengaBlock) event.getEntity();
+            EntityVisualJengaBlock jengaBlock = (EntityVisualJengaBlock) event.getEntity();
 
             if(players.contains(player) && (jengaBlock.namedTag != null)) {
                 CompoundTag nbtTag = jengaBlock.namedTag;

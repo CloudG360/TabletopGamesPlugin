@@ -6,7 +6,7 @@ import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
-import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
+import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
 import net.cg360.nsapi.commons.Check;
 
 import java.util.Optional;
@@ -31,9 +31,9 @@ public class JengaLayer {
     protected float scale;
     protected boolean isAxisAlternate; // Otherwise facing Z
 
-    protected EntityJengaBlock left; // Lowest on the layer's axis
-    protected EntityJengaBlock center;
-    protected EntityJengaBlock right; // Highest on the layer's axis.
+    protected EntityVisualJengaBlock left; // Lowest on the layer's axis
+    protected EntityVisualJengaBlock center;
+    protected EntityVisualJengaBlock right; // Highest on the layer's axis.
 
 
     /** @param belowInStack the layer in the stack that this stack will be placed on top of. */
@@ -151,11 +151,11 @@ public class JengaLayer {
 
     /**
      * Spawns an entity for a Jenga Block.
-     * @param position the position in the world of the EntityJengaBlock
+     * @param position the position in the world of the EntityVisualJengaBlock
      * @param positionWithinLayer 0 = left; 1 = center; 2 = right;
      * @return the id of the spawned block.
      */
-    protected EntityJengaBlock spawnBlock(Location position, int positionWithinLayer) {
+    protected EntityVisualJengaBlock spawnBlock(Location position, int positionWithinLayer) {
 
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<>("Pos")
@@ -181,7 +181,7 @@ public class JengaLayer {
         nbt.putBoolean("ishuman", true);
 
         FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
-        EntityJengaBlock jengaHuman = new EntityJengaBlock(chunk, nbt);
+        EntityVisualJengaBlock jengaHuman = new EntityVisualJengaBlock(chunk, nbt);
 
         jengaHuman.setPositionAndRotation(position, isAxisAlternate ? 90f : 0f, 0);
         jengaHuman.setImmobile(true);
@@ -205,8 +205,8 @@ public class JengaLayer {
     public float getScale() { return scale; }
     public boolean isAxisAlternate() { return isAxisAlternate; }
 
-    public EntityJengaBlock getLeft() { return left; }
-    public EntityJengaBlock getCenter() { return center; }
-    public EntityJengaBlock getRight() { return right; }
+    public EntityVisualJengaBlock getLeft() { return left; }
+    public EntityVisualJengaBlock getCenter() { return center; }
+    public EntityVisualJengaBlock getRight() { return right; }
 
 }

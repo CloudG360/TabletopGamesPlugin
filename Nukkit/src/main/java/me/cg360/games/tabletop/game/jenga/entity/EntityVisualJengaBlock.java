@@ -13,6 +13,7 @@ import cn.nukkit.event.level.ChunkUnloadEvent;
 import cn.nukkit.event.level.LevelUnloadEvent;
 import cn.nukkit.event.server.ServerStopEvent;
 import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
@@ -27,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class EntityJengaBlock extends EntityHuman implements Listener {
+public class EntityVisualJengaBlock extends EntityHuman implements Listener {
 
     protected static final String GEOMETRY;
     protected static final BufferedImage DATA;
@@ -55,10 +56,11 @@ public class EntityJengaBlock extends EntityHuman implements Listener {
         }
     }
 
+    protected ArrayList<EntityJengaBlockCollider> colliders;
 
-
-    public EntityJengaBlock(FullChunk chunk, CompoundTag nbt) {
+    public EntityVisualJengaBlock(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
+        this.colliders = new ArrayList<>();
     }
 
 
@@ -129,6 +131,27 @@ public class EntityJengaBlock extends EntityHuman implements Listener {
         super.spawnTo(player);
     }
 
+
+    @Override // Calculate offsets.
+    public boolean setPosition(Vector3 pos) {
+        boolean result = super.setPosition(pos);
+        for(EntityJengaBlockCollider collider: colliders) collider.updateAngleToParent();
+        return result;
+    }
+
+    @Override
+    public void setRotation(double yaw, double pitch) {
+        super.setRotation(yaw, pitch);
+        for(EntityJengaBlockCollider collider: colliders) collider.updateAngleToParent();
+    }
+
+    @Override
+    public boolean setMotion(Vector3 motion) {
+        for(EntityJengaBlockCollider collider: colliders) collider.setMotion(motion);
+        return super.setMotion(motion);
+    }
+
+
     @Override
     public boolean attack(EntityDamageEvent source) {
         source.setCancelled(true);
@@ -142,9 +165,9 @@ public class EntityJengaBlock extends EntityHuman implements Listener {
         return false;
     }
 
-    @Override public float getHeight() { return 1f; }
-    @Override public float getWidth() { return 1f; }
-    @Override public float getLength() { return 3f; }
+    @Override public float getHeight() { return 0f; }
+    @Override public float getWidth() { return 0f; }
+    @Override public float getLength() { return 0f; }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChunkUnload(ChunkUnloadEvent event) {
