@@ -9,7 +9,17 @@ import cn.nukkit.nbt.tag.ListTag;
 import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
 import net.cg360.nsapi.commons.Check;
 
+import java.util.Optional;
+
 public class JengaLayer {
+
+    public static final String NBT_LAYERS_BELOW_COUNT = "layers_below";
+    public static final String NBT_POS_IN_LAYER = "layers_below";
+    public static final String NBT_LAYER_ALTERNATE_AXIS = "layer_alternate_axis";
+
+
+    protected JengaLayer layerBelow;
+    protected int layersBelowCount;
 
     protected Location layerOrigin;
 
@@ -24,6 +34,8 @@ public class JengaLayer {
     /** @param belowInStack the layer in the stack that this stack will be placed on top of. */
     public JengaLayer(JengaLayer belowInStack) {
         this(belowInStack.getLayerOrigin().getLocation(), belowInStack.getScale(), !belowInStack.isAxisAlternate()); // Retain scale, flip alternate axis value.
+        this.layerBelow = belowInStack;
+        this.layersBelowCount = belowInStack.getLayersBelowCount() + 1;
         this.layerOrigin = layerOrigin.add(0, scale, 0); //Update location, stack y up by 1.
     }
 
@@ -36,6 +48,9 @@ public class JengaLayer {
     public JengaLayer(Location layerOrigin, float scale, boolean isAxisAlternate) {
         Check.nullParam(layerOrigin, "layerOrigin");
         Check.nullParam(layerOrigin.getLevel(), "layerOrigin.level");
+
+        this.layerBelow = null;
+        this.layersBelowCount = 0;
 
         this.layerOrigin = layerOrigin;
 
@@ -160,7 +175,10 @@ public class JengaLayer {
         return jengaHuman;
     }
 
-
+    /** @return the layer below this layer in the Jenga stack. Empty means it is the bottom of the tower.*/
+    public Optional<JengaLayer> getLayerBelow() { return Optional.ofNullable(layerBelow); }
+    /** @return the amount of layers below this layer. */
+    public int getLayersBelowCount() { return layersBelowCount; }
 
     public Location getLayerOrigin() { return layerOrigin; }
     public float getScale() { return scale; }

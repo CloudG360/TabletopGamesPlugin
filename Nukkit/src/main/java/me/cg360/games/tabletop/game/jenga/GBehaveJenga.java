@@ -140,16 +140,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             newLayer.fillLayer();
             lastLayer = newLayer;
         }
-
-        /*
-        spawnBlock(origin.getLocation().add(0, 0, -BLOCK_SCALE), false);
-        spawnBlock(origin.getLocation().add(0, 0, 0), false);
-        spawnBlock(origin.getLocation().add(0, 0, BLOCK_SCALE), false);
-
-        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 1, 0), true);
-        spawnBlock(origin.getLocation().add(0, 1, 0), true);
-        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 1, 0), true);
-        */
     }
 
 }
