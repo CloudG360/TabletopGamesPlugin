@@ -151,8 +151,15 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         }
     }
 
-    protected void validBlockHit(EntityDamageByEntityEvent event, int layersBelow, int posInLayer, boolean isAlternateLayer) {
+    protected void validBlockHit(EntityDamageByEntityEvent event, Player attacker, int layersBelow, int posInLayer, boolean isAlternateLayer) {
+        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit! Here's some debug info!"));
 
+        attacker.sendMessage(String.format("%sTower UUID: %s%s", TextFormat.GRAY, TextFormat.GOLD, topTowerLayer.getTowerUUID().toString()));
+        attacker.sendMessage(String.format("%sTower Scale: %s%s", TextFormat.GRAY, TextFormat.GOLD, topTowerLayer.getScale()));
+
+        attacker.sendMessage(String.format("%sLayers below this block: %s%s", TextFormat.GRAY, TextFormat.GOLD, layersBelow));
+        attacker.sendMessage(String.format("%sPosition within its layer: %s%s", TextFormat.GRAY, TextFormat.GOLD, posInLayer));
+        attacker.sendMessage(String.format("%sIs Layer 'Alternate'?: %s%s", TextFormat.GRAY, TextFormat.GOLD, isAlternateLayer ? "Yes!" : "No."));
     }
 
     @EventHandler
