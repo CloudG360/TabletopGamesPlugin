@@ -12,7 +12,7 @@ public class InitKeys {
     // Where was the game started?
     public static final Key<Location> ORIGIN = new Key<>("origin");
 
-    // How far around the origin should invites be sent to.
+    // How far should the radius where players are part of the game reach
     public static final Key<Double> PLAY_AREA_RADIUS = new Key<>("play_area_radius");
 
     // How far around the origin should invites be sent to.

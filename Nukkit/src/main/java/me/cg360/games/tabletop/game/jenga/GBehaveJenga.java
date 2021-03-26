@@ -21,6 +21,7 @@ import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.RuleAbstractCircularBoundary;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RulePushIntoCircularBoundary;
+import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RuleReleasePlayerOutsideCircularBoundary;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.text.DecimalFormat;
@@ -39,6 +40,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     protected int inviteLengthTicks;
 
     protected RuleAcquirePlayersFromRadius recruitmentRule;
+    protected RuleReleasePlayerOutsideCircularBoundary releaseRule;
     protected RulePushIntoCircularBoundary retentionRule;
 
     protected HashMap<String, Long> blockEntityIDs;
@@ -91,8 +93,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     @Override
     public WatchdogRule[] getRules() {
+        double playAreaRadius = initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 15d);
         this.recruitmentRule = new RuleAcquirePlayersFromRadius(inviteMessage, origin, initSettings.getOrElse(InitKeys.INVITE_RADIUS, 10d), true);
-        this.retentionRule = new RulePushIntoCircularBoundary(origin, initSettings.getOrElse(InitKeys.PLAY_AREA_RADIUS, 15d), true);
+        this.releaseRule = new RuleReleasePlayerOutsideCircularBoundary(origin, playAreaRadius + 10d, false); // Fallback border.
+        this.retentionRule = new RulePushIntoCircularBoundary(origin, playAreaRadius, true);
 
         TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
 
@@ -101,11 +105,12 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         }, inviteLengthTicks);
 
-        return new WatchdogRule[] {
-                new RuleReleasePlayerOnQuit(), // This one is important :)
+        return new WatchdogRule[] { // Order is important :)
+                new RuleReleasePlayerOnQuit(),
                 new RuleReleasePlayerOnWorldChange(),
                 this.recruitmentRule,
-                this.retentionRule
+                this.retentionRule,
+                this.releaseRule
         };
     }
 
