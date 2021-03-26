@@ -132,11 +132,13 @@ public class EntityJengaBlock extends EntityHuman implements Listener {
     @Override
     public boolean attack(EntityDamageEvent source) {
         source.setCancelled(true);
+        getServer().getPluginManager().callEvent(source);
         return false;
     }
 
     @Override
     public boolean attack(float damage) {
+        this.attack(new EntityDamageEvent(this, EntityDamageEvent.DamageCause.CUSTOM, 0));
         return false;
     }
 
