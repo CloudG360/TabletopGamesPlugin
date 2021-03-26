@@ -56,11 +56,10 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         }
     }
 
-    protected ArrayList<EntityJengaBlockCollider> colliders;
+    protected ArrayList<EntityJengaBlockCollider> colliders = new ArrayList<>();
 
     public EntityVisualJengaBlock(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
-        this.colliders = new ArrayList<>();
     }
 
 
@@ -136,23 +135,22 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         super.spawnTo(player);
     }
 
-
     @Override // Calculate offsets.
     public boolean setPosition(Vector3 pos) {
         boolean result = super.setPosition(pos);
-        for(EntityJengaBlockCollider collider: colliders) collider.updateAngleToParent();
+        for (EntityJengaBlockCollider collider : colliders) collider.updateAngleToParent();
         return result;
     }
 
     @Override
     public void setRotation(double yaw, double pitch) {
         super.setRotation(yaw, pitch);
-        for(EntityJengaBlockCollider collider: colliders) collider.updateAngleToParent();
+        for (EntityJengaBlockCollider collider : colliders) collider.updateAngleToParent();
     }
 
     @Override
     public boolean setMotion(Vector3 motion) {
-        for(EntityJengaBlockCollider collider: colliders) collider.setMotion(motion);
+        for (EntityJengaBlockCollider collider : colliders) collider.setMotion(motion);
         return super.setMotion(motion);
     }
 
