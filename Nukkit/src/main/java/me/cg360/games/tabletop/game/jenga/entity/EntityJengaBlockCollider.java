@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -143,7 +144,7 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
     }
 
     public void updateAngleToParent() {
-        double angleRadians = Math.toRadians(jengaBlockParent.getYaw());
+        double angleRadians = Math.toRadians(jengaBlockParent.getYaw() + 90); // It's off in spacing by 90 degrees :D
         Vector3 direction = new Vector3(Math.sin(angleRadians), 0, Math.cos(angleRadians));
         Vector3 parentDelta = direction.multiply(getFullDistance());
 
@@ -152,7 +153,13 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
 
     @Override
     public boolean attack(EntityDamageEvent source) {
-        return this.jengaBlockParent.attack(source);
+
+        if(source instanceof EntityDamageByEntityEvent) { // Implement others when needed
+            EntityDamageByEntityEvent old = (EntityDamageByEntityEvent) source;
+            EntityDamageByEntityEvent n = new EntityDamageByEntityEvent(old.getDamager(), this.jengaBlockParent, old.getCause(), old.getDamage());
+            return this.jengaBlockParent.attack(n);
+        }
+        return false;
     }
 
     @Override

@@ -164,7 +164,7 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
     @Override
     public void setScale(float scale) {
         super.setScale(scale);
-        
+
         if(colliders != null) {
             for (EntityJengaBlockCollider collider : colliders) {
                 collider.updateAngleToParent();
