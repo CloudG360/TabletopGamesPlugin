@@ -6,6 +6,7 @@ import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
+import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlockCollider;
 import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
 import net.cg360.nsapi.commons.Check;
 
@@ -191,7 +192,18 @@ public class JengaLayer {
 
         jengaHuman.spawnToAll();
 
+        setupCollider(jengaHuman, -1);
+        setupCollider(jengaHuman, 0);
+        setupCollider(jengaHuman, 1);
+
         return jengaHuman;
+    }
+
+    protected static void setupCollider(EntityVisualJengaBlock block, double distance) {
+        EntityJengaBlockCollider c = new EntityJengaBlockCollider(block, distance);
+        c.spawnToAll();
+
+        block.getColliders().add(c);
     }
 
     /** @return the layer below this layer in the Jenga stack. Empty means it is the bottom of the tower.*/

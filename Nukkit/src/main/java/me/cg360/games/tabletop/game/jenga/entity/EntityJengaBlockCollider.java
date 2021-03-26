@@ -5,8 +5,6 @@ import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
-import cn.nukkit.level.Location;
-import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
@@ -56,14 +54,15 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
     }
 
     protected EntityVisualJengaBlock jengaBlockParent;
-    protected double yawParentOffset;
     protected double distance;
 
-    protected EntityJengaBlockCollider(EntityVisualJengaBlock jengaBlockParent, double yawParentOffset, double distance) {
+    public EntityJengaBlockCollider(EntityVisualJengaBlock jengaBlockParent, double distance) {
         super(jengaBlockParent.getChunk(), generateNBTFromParent(jengaBlockParent));
-        this.jengaBlockParent = null;
-        this.yawParentOffset = yawParentOffset;
+        this.jengaBlockParent = jengaBlockParent;
         this.distance = distance;
+        this.setScale(jengaBlockParent.getScale());
+        this.setImmobile(true);
+        this.updateAngleToParent();
     }
 
     private static CompoundTag generateNBTFromParent(EntityVisualJengaBlock jengaBlockParent) {
@@ -111,7 +110,6 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
         this.namedTag.putCompound("Skin", skinDataTag);
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
-        //updateAngleToParent();
     }
 
     @Override
@@ -144,8 +142,8 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
         super.spawnTo(player);
     }
 
-    protected void updateAngleToParent() {
-        double angleRadians = Math.toRadians(jengaBlockParent.getYaw() + yawParentOffset);
+    public void updateAngleToParent() {
+        double angleRadians = Math.toRadians(jengaBlockParent.getYaw());
         Vector3 direction = new Vector3(Math.sin(angleRadians), 0, Math.cos(angleRadians));
         Vector3 parentDelta = direction.multiply(getFullDistance());
 

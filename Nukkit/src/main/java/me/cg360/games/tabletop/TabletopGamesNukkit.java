@@ -7,6 +7,7 @@ import cn.nukkit.scheduler.ServerScheduler;
 import cn.nukkit.utils.Config;
 import me.cg360.games.tabletop.command.CommandTableGame;
 import me.cg360.games.tabletop.game.jenga.GBehaveJenga;
+import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlockCollider;
 import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameProfile;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
@@ -51,6 +52,7 @@ public class TabletopGamesNukkit extends PluginBase {
             // -- Register Entities --
 
             Entity.registerEntity(EntityVisualJengaBlock.class.getSimpleName(), EntityVisualJengaBlock.class);
+            Entity.registerEntity(EntityJengaBlockCollider.class.getSimpleName(), EntityJengaBlockCollider.class);
 
 
             // -- Register Commands --

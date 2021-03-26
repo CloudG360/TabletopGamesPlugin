@@ -91,12 +91,6 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
 
-        TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
-            this.colliders.add(new EntityJengaBlockCollider(this, 0, 1));
-            this.colliders.add(new EntityJengaBlockCollider(this, 0, 0));
-            this.colliders.add(new EntityJengaBlockCollider(this, 180, 1));
-        }, 1);
-
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
     }
 
@@ -167,6 +161,16 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         return super.setMotion(motion);
     }
 
+    @Override
+    public void setScale(float scale) {
+        super.setScale(scale);
+        
+        if(colliders != null) {
+            for (EntityJengaBlockCollider collider : colliders) {
+                collider.updateAngleToParent();
+            }
+        }
+    }
 
     @Override
     public boolean attack(EntityDamageEvent source) {
@@ -184,6 +188,12 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
     @Override public float getHeight() { return 0f; }
     @Override public float getWidth() { return 0f; }
     @Override public float getLength() { return 0f; }
+
+
+
+    public ArrayList<EntityJengaBlockCollider> getColliders() {
+        return colliders;
+    }
 
 
 
