@@ -190,19 +190,35 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChunkUnload(ChunkUnloadEvent event) {
         for (Entity entity: new ArrayList<>(event.getChunk().getEntities().values())) {
-            if(entity == this) this.close();
+            if(entity == this) {
+                this.close();
+
+                if(colliders != null) {
+                    for (EntityJengaBlockCollider c: colliders) c.close();
+                }
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onLevelUnload(LevelUnloadEvent event) {
         for (Entity entity : event.getLevel().getEntities()) {
-            if(entity == this) this.close();
+            if(entity == this) {
+                this.close();
+
+                if(colliders != null) {
+                    for (EntityJengaBlockCollider c: colliders) c.close();
+                }
+            }
         }
     }
 
     @EventHandler
     public void onServerStop(ServerStopEvent event) {
         this.close();
+
+        if(colliders != null) {
+            for (EntityJengaBlockCollider c: colliders) c.close();
+        }
     }
 }
