@@ -19,7 +19,6 @@ import me.cg360.games.tabletop.ngapimicro.WatchdogRule;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleAcquirePlayersFromRadius;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
-import me.cg360.games.tabletop.ngapimicro.rule.boundary.RuleAbstractCircularBoundary;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RulePushIntoCircularBoundary;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RuleReleasePlayerOutsideCircularBoundary;
 import net.cg360.nsapi.commons.data.Settings;
@@ -30,7 +29,7 @@ import java.util.*;
 public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
 
-    public static final float BLOCK_SCALE = 1f;
+
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -132,6 +131,17 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
 
     protected void onFinishRecruitment() {
+
+        JengaLayer lastLayer = new JengaLayer(origin, 0.5f, false);
+        lastLayer.fillLayer();
+
+        for(int i = 0; i < 9; i++) {
+            JengaLayer newLayer = new JengaLayer(lastLayer);
+            newLayer.fillLayer();
+            lastLayer = newLayer;
+        }
+
+        /*
         spawnBlock(origin.getLocation().add(0, 0, -BLOCK_SCALE), false);
         spawnBlock(origin.getLocation().add(0, 0, 0), false);
         spawnBlock(origin.getLocation().add(0, 0, BLOCK_SCALE), false);
@@ -139,62 +149,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 1, 0), true);
         spawnBlock(origin.getLocation().add(0, 1, 0), true);
         spawnBlock(origin.getLocation().add(BLOCK_SCALE, 1, 0), true);
-
-        spawnBlock(origin.getLocation().add(0, 2, -BLOCK_SCALE), false);
-        spawnBlock(origin.getLocation().add(0, 2, 0), false);
-        spawnBlock(origin.getLocation().add(0, 2, BLOCK_SCALE), false);
-
-        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 3, 0), true);
-        spawnBlock(origin.getLocation().add(0, 3, 0), true);
-        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 3, 0), true);
-
-        spawnBlock(origin.getLocation().add(0, 4, -BLOCK_SCALE), false);
-        spawnBlock(origin.getLocation().add(0, 4, 0), false);
-        spawnBlock(origin.getLocation().add(0, 4, BLOCK_SCALE), false);
-
-        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 5, 0), true);
-        spawnBlock(origin.getLocation().add(0, 5, 0), true);
-        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 5, 0), true);
-
-        spawnBlock(origin.getLocation().add(0, 6, -BLOCK_SCALE), false);
-        spawnBlock(origin.getLocation().add(0, 6, 0), false);
-        spawnBlock(origin.getLocation().add(0, 6, BLOCK_SCALE), false);
-
-        spawnBlock(origin.getLocation().add(-BLOCK_SCALE, 7, 0), true);
-        spawnBlock(origin.getLocation().add(0, 7, 0), true);
-        spawnBlock(origin.getLocation().add(BLOCK_SCALE, 7, 0), true);
+        */
     }
 
-    /** @return the id of the spawned block.*/
-    protected EntityJengaBlock spawnBlock(Location position, boolean alternate) {
-
-        CompoundTag nbt = new CompoundTag()
-                .putList(new ListTag<>("Pos")
-                        .add(new DoubleTag("", position.getX()))
-                        .add(new DoubleTag("", position.getY()))
-                        .add(new DoubleTag("", position.getZ())))
-                .putList(new ListTag<DoubleTag>("Motion")
-                        .add(new DoubleTag("", 0))
-                        .add(new DoubleTag("", 0))
-                        .add(new DoubleTag("", 0)))
-                .putList(new ListTag<FloatTag>("Rotation")
-                        .add(new FloatTag("", alternate ? 90f : 0f))
-                        .add(new FloatTag("", 0f)))
-                .putBoolean("npc", true)
-                .putFloat("scale", BLOCK_SCALE);
-        nbt.putBoolean("ishuman", true);
-
-        FullChunk chunk = position.getLevel().getChunk((int) Math.floor(position.getX() / 16), (int) Math.floor(position.getZ() / 16), true);
-        EntityJengaBlock jengaHuman = new EntityJengaBlock(chunk, nbt);
-
-        jengaHuman.setPositionAndRotation(position, alternate ? 90f : 0f, 0);
-        jengaHuman.setImmobile(true);
-        jengaHuman.setNameTagAlwaysVisible(false);
-        jengaHuman.setNameTagVisible(false);
-        jengaHuman.setScale(BLOCK_SCALE);
-
-        jengaHuman.spawnToAll();
-
-        return jengaHuman;
-    }
 }
