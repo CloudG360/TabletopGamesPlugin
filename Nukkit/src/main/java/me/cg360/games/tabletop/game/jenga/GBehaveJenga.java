@@ -8,6 +8,7 @@ import cn.nukkit.level.Location;
 import cn.nukkit.nbt.tag.*;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
+import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
@@ -19,6 +20,7 @@ import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnQuit;
 import me.cg360.games.tabletop.ngapimicro.rule.RuleReleasePlayerOnWorldChange;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RulePushIntoCircularBoundary;
 import me.cg360.games.tabletop.ngapimicro.rule.boundary.circular.RuleReleasePlayerOutsideCircularBoundary;
+import net.cg360.nsapi.commons.Utility;
 import net.cg360.nsapi.commons.data.Settings;
 
 import java.text.DecimalFormat;
@@ -122,7 +124,17 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     @Override
     protected void onFinish() {
-        // Delete jenga entities.
+        Optional<JengaLayer> nextLayer = Optional.ofNullable(topTowerLayer);
+
+        while (nextLayer.isPresent()) {
+            JengaLayer currentLayer = nextLayer.get();
+
+            currentLayer.getLeft().close();
+            currentLayer.getCenter().close();
+            currentLayer.getRight().close();
+
+            nextLayer = currentLayer.getLayerBelow();
+        }
     }
 
 
@@ -171,7 +183,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                             int layersBelow = ((IntTag) layersBelowTag).getData();
                             int posInLayer = ((IntTag) posInLayerTag).getData();
                             boolean isAlternateLayer = ((ByteTag) isAlternateLayerTag).getData() == 1;
-                            validBlockHit(event, layersBelow, posInLayer, isAlternateLayer);
+                            validBlockHit(event, player, layersBelow, posInLayer, isAlternateLayer);
                         }
                     }
                 }
