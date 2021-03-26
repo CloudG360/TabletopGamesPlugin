@@ -1,13 +1,11 @@
 package me.cg360.games.tabletop.game.jenga;
 
 import cn.nukkit.Player;
+import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Location;
-import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.nbt.tag.CompoundTag;
-import cn.nukkit.nbt.tag.DoubleTag;
-import cn.nukkit.nbt.tag.FloatTag;
-import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.nbt.tag.*;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlock;
@@ -42,7 +40,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     protected RuleReleasePlayerOutsideCircularBoundary releaseRule;
     protected RulePushIntoCircularBoundary retentionRule;
 
-    protected HashMap<String, Long> blockEntityIDs;
+    protected JengaLayer topTowerLayer;
 
 
     @Override
@@ -52,7 +50,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         this.initSettings = settings;
         this.players = new ArrayList<>();
-        this.blockEntityIDs = new HashMap<>();
 
         // -- Init settings + shortcuts --
 
@@ -132,13 +129,53 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     protected void onFinishRecruitment() {
 
-        JengaLayer lastLayer = new JengaLayer(origin, 0.5f, false);
-        lastLayer.fillLayer();
+        this.topTowerLayer =  new JengaLayer(origin, 1f/3, false);
+        topTowerLayer.fillLayer();
 
         for(int i = 0; i < 9; i++) {
-            JengaLayer newLayer = new JengaLayer(lastLayer);
+            JengaLayer newLayer = new JengaLayer(topTowerLayer);
             newLayer.fillLayer();
-            lastLayer = newLayer;
+            this.topTowerLayer = newLayer;
+        }
+    }
+
+    protected void validBlockHit(EntityDamageByEntityEvent event, int layersBelow, int posInLayer, boolean isAlternateLayer) {
+
+    }
+
+    @EventHandler
+    public void onBlockDamage(EntityDamageByEntityEvent event) {
+
+        if((event.getDamager() instanceof Player) && (event.getEntity() instanceof EntityJengaBlock)) {
+            Player player = (Player) event.getDamager();
+            EntityJengaBlock jengaBlock = (EntityJengaBlock) event.getEntity();
+
+            if(players.contains(player) && (jengaBlock.namedTag != null)) {
+                CompoundTag nbtTag = jengaBlock.namedTag;
+                CompoundTag towerTag = nbtTag.getCompound(JengaLayer.NBT_COMPOUND_TOWER);
+
+                if(towerTag != null) {
+                    String uuid = towerTag.getString(JengaLayer.NBT_TOWER_UUID);
+
+                    // Check UUID is valid/present + check it's the same as this game's tower.
+                    if( ((uuid != null) && (uuid.length() != 0)) && uuid.equals(topTowerLayer.getTowerUUID().toString()) ) {
+                        Tag layersBelowTag = towerTag.get(JengaLayer.NBT_LAYERS_BELOW_COUNT);
+                        Tag posInLayerTag = towerTag.get(JengaLayer.NBT_POS_IN_LAYER);
+                        Tag isAlternateLayerTag = towerTag.get(JengaLayer.NBT_LAYER_ALTERNATE_AXIS);
+
+                        //Ensure they all valid.
+                        if(             (layersBelowTag instanceof IntTag)
+                                &&  (posInLayerTag instanceof IntTag)
+                                && (isAlternateLayerTag instanceof ByteTag) ){
+
+                            int layersBelow = ((IntTag) layersBelowTag).getData();
+                            int posInLayer = ((IntTag) posInLayerTag).getData();
+                            boolean isAlternateLayer = ((ByteTag) isAlternateLayerTag).getData() == 1;
+                            validBlockHit(event, layersBelow, posInLayer, isAlternateLayer);
+                        }
+                    }
+                }
+            }
         }
     }
 
