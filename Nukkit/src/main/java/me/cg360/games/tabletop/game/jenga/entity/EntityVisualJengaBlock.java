@@ -92,6 +92,11 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         super.initEntity();
         this.skin.generateSkinId(this.getUniqueId().toString());
 
+
+        this.colliders.add(new EntityJengaBlockCollider(this, 0, 1));
+        this.colliders.add(new EntityJengaBlockCollider(this, 0, 0));
+        this.colliders.add(new EntityJengaBlockCollider(this, 180, 1));
+
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
     }
 
@@ -168,6 +173,8 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
     @Override public float getHeight() { return 0f; }
     @Override public float getWidth() { return 0f; }
     @Override public float getLength() { return 0f; }
+
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChunkUnload(ChunkUnloadEvent event) {

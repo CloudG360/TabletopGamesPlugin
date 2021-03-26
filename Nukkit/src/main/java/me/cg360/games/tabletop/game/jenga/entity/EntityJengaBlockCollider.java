@@ -8,6 +8,9 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.DoubleTag;
+import cn.nukkit.nbt.tag.FloatTag;
+import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 
@@ -55,11 +58,28 @@ public class EntityJengaBlockCollider extends EntityHuman implements Listener {
     protected double yawParentOffset;
     protected double distance;
 
-    protected EntityJengaBlockCollider(EntityVisualJengaBlock jengaBlockParent, double yawParentOffset, double distance, FullChunk chunk, CompoundTag nbt) {
-        super(chunk, nbt);
+    protected EntityJengaBlockCollider(EntityVisualJengaBlock jengaBlockParent, double yawParentOffset, double distance) {
+        super(jengaBlockParent.getChunk(), generateNBTFromParent(jengaBlockParent));
         this.jengaBlockParent = jengaBlockParent;
         this.yawParentOffset = yawParentOffset;
         this.distance = distance;
+    }
+
+    private static CompoundTag generateNBTFromParent(EntityVisualJengaBlock parent) {
+        return new CompoundTag()
+                .putList(new ListTag<>("Pos")
+                        .add(new DoubleTag("", parent.getX()))
+                        .add(new DoubleTag("", parent.getY()))
+                        .add(new DoubleTag("", parent.getZ())))
+                .putList(new ListTag<DoubleTag>("Motion")
+                        .add(new DoubleTag("", parent.getMotion().getX()))
+                        .add(new DoubleTag("", parent.getMotion().getY()))
+                        .add(new DoubleTag("", parent.getMotion().getZ())))
+                .putList(new ListTag<FloatTag>("Rotation")
+                        .add(new FloatTag("", (float) parent.getYaw()))
+                        .add(new FloatTag("", (float) parent.getPitch())))
+                .putBoolean("npc", true)
+                .putFloat("scale", parent.getScale());
     }
 
 
