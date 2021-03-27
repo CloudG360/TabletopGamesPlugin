@@ -162,8 +162,13 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             attacker.sendMessage(String.format("%sIs Layer 'Alternate'?: %s%s", TextFormat.GRAY, TextFormat.GOLD, isAlternateLayer ? "Yes!" : "No."));
         }
 
-        float v = calculateRemovalIntegrity(layersBelow, posInLayer);
-        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit! Integrity: "+TextFormat.GOLD+String.valueOf(v)));
+        float v = calculateRemovalIntegrity(layersBelow, posInLayer) * 2f;
+        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit!"));
+        attacker.sendMessage(TextFormat.GRAY + "Integrity: " + TextFormat.GOLD + String.valueOf(v));
+
+        if(v <= 1f) {
+            attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format((1f - v)  * 100f) + "%");
+        }
     }
 
     // NORTH = -Z
@@ -195,12 +200,12 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             } else{
 
                 if (layer.isAxisAlternate()) {
-                    baseStability[2] *= 0.86f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
-                    baseStability[3] *= 0.86f;
+                    baseStability[2] *= 0.75f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
+                    baseStability[3] *= 0.75f;
 
                 } else {
-                    baseStability[0] *= 0.86f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
-                    baseStability[1] *= 0.86f;
+                    baseStability[0] *= 0.75f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
+                    baseStability[1] *= 0.75f;
                 }
             }
 
@@ -211,11 +216,11 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             // Missing lowest most block of an axis.
             if(!layer.hasLeft()) {
                 // 2 = West; 0 = North
-                baseStability[layer.isAxisAlternate() ? 2 : 0] *= 0.96f;
+                baseStability[layer.isAxisAlternate() ? 2 : 0] *= 0.9f;
 
             } else if(!layer.hasRight()) {
                 // 3 = East; 1 = South
-                baseStability[layer.isAxisAlternate() ? 3 : 1] *= 0.96f;
+                baseStability[layer.isAxisAlternate() ? 3 : 1] *= 0.9f;
             }
         }
 
@@ -223,8 +228,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         // Seed depends on the layer's depth (+ 1 to avoid a seed of 0) along with the tower's uuid.
         // Limit variation's scope by multiplying it by a small number and applying it as (1 - variation)
         // The right variation if shuffled along by me pressing a few random numbers to offset it a bit :D
-        float variationLeft = 0.1f * new Random((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
-        float variationRight = 0.1f * new Random(28351 + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
+        float variationLeft = 0.2f * new Random((layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
+        float variationRight = 0.2f * new Random((layer.getLayersBelowCount() * 1234L) + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
         if(layer.isAxisAlternate()) {
             baseStability[2] *= (1 - variationLeft);
             baseStability[3] *= (1 - variationRight);
