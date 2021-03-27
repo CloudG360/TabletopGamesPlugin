@@ -5,6 +5,8 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Location;
+import cn.nukkit.level.ParticleEffect;
+import cn.nukkit.level.Sound;
 import cn.nukkit.nbt.tag.*;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
@@ -192,10 +194,15 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                     blockLayer.despawnRight();
                     break;
             }
+
+            attacker.getLevel().addSound(attacker.getPosition(), Sound.NOTE_SNARE);
+            for(Player player: players) {
+                player.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, String.format("%s%s took a block from the tower!", attacker.getName(), TextFormat.GRAY)));
+            }
+
         }
 
-        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit!"));
-        attacker.sendMessage(TextFormat.GRAY + "Integrity: " + TextFormat.GOLD + String.valueOf(integrity));
+        attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Block Hit!"));
 
         // If integrity is below 1, do a random check to see if the tower falls.
         if(integrity <= 1f){
@@ -204,8 +211,11 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
             if(!attacker.isSneaking()) {  // TODO: Temporary! Use items in the hotbar instead.
                 float roll = new Random().nextFloat();
+
                 if(roll <= chance) {
-                    attacker.sendMessage(Util.fMessage("UH OH!", TextFormat.DARK_RED, "The tower has fallen!"));
+                    for(Player p: players) p.sendMessage(Util.fMessage("UH OH!", TextFormat.DARK_RED, String.format("%s%s toppled the tower!", attacker.getName(), TextFormat.GRAY)));
+                    attacker.getLevel().addSound(origin, Sound.RANDOM_EXPLODE);
+                    attacker.getLevel().addParticleEffect(origin, ParticleEffect.HUGE_EXPLOSION_LEVEL);
                     this.getWatchdog().stopGame();
                 }
             }
