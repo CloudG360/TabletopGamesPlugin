@@ -70,6 +70,9 @@ public class JengaLayer {
         this.right = null;
     }
 
+    // Used for duplication by EmulatedJengaLayer
+    protected JengaLayer() { }
+
 
 
     /** Spawns the Jenga block of the lower position of the layer's set axis */
@@ -220,5 +223,11 @@ public class JengaLayer {
     public Optional<EntityVisualJengaBlock> getLeft() { return Optional.ofNullable(left); }
     public Optional<EntityVisualJengaBlock> getCenter() { return Optional.ofNullable(center); }
     public Optional<EntityVisualJengaBlock> getRight() { return Optional.ofNullable(right); }
+
+    // Used by FakeJengaLayers in calculations. This does mean that the optionals could be empty
+    // even if these retured true!
+    public boolean hasLeft() { return getLeft().isPresent(); }
+    public boolean hasCenter() { return getCenter().isPresent(); }
+    public boolean hasRight() { return getRight().isPresent(); }
 
 }
