@@ -217,8 +217,8 @@ public class JengaLayer {
     public float getScale() { return scale; }
     public boolean isAxisAlternate() { return isAxisAlternate; }
 
-    public EntityVisualJengaBlock getLeft() { return left; }
-    public EntityVisualJengaBlock getCenter() { return center; }
-    public EntityVisualJengaBlock getRight() { return right; }
+    public Optional<EntityVisualJengaBlock> getLeft() { return Optional.ofNullable(left); }
+    public Optional<EntityVisualJengaBlock> getCenter() { return Optional.ofNullable(center); }
+    public Optional<EntityVisualJengaBlock> getRight() { return Optional.ofNullable(right); }
 
 }

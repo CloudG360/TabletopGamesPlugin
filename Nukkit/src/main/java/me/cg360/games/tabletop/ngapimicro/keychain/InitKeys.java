@@ -21,4 +21,7 @@ public class InitKeys {
     // How long (in ticks) should "yes" responses be accepted for.
     public static final Key<Integer> INITIAL_INVITE_LENGTH = new Key<>("init_invite_length");
 
+    // Are debug messages and behaviours enabled in the game?
+    public static final Key<Boolean> DEBUG_MODE_ENABLED = new Key<>("is_debug_enabled");
+
 }
