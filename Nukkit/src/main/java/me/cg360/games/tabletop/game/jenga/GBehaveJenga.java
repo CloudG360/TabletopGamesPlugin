@@ -161,6 +161,9 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             attacker.sendMessage(String.format("%sPosition within its layer: %s%s", TextFormat.GRAY, TextFormat.GOLD, posInLayer));
             attacker.sendMessage(String.format("%sIs Layer 'Alternate'?: %s%s", TextFormat.GRAY, TextFormat.GOLD, isAlternateLayer ? "Yes!" : "No."));
         }
+
+        float v = calculateRemovalIntegrity(layersBelow, posInLayer);
+        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit! Integrity: "+TextFormat.GOLD+String.valueOf(v)));
     }
 
     // NORTH = -Z
@@ -174,32 +177,49 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     // Stored { NORTH, SOUTH, WEST, EAST }
     protected float[] calculateSingleLayerIntegrity(JengaLayer layer) {
-        int layersPresent = 0;
+        int blocksPresent = 0;
         float[] baseStability = new float[]{ 1.0f, 1.0f, 1.0f, 1.0f };
-        if(layer.hasLeft()) layersPresent++;
-        if(layer.hasCenter()) layersPresent++;
-        if(layer.hasRight()) layersPresent++;
+        if(layer.hasLeft()) blocksPresent++;
+        if(layer.hasCenter()) blocksPresent++;
+        if(layer.hasRight()) blocksPresent++;
 
         // Rule 0: If a layer is empty, it's completely unstable :D
-        if(layersPresent == 0) return new float[]{ 0.0f, 0.0f, 0.0f, 0.0f};
+        if(blocksPresent == 0) return new float[]{ 0.0f, 0.0f, 0.0f, 0.0f};
 
         // Rule 1: If only one block is present, it ***must*** be the center block else gravity happens.
-        if((layersPresent == 1) && (layer.hasLeft() || layer.hasRight())) {
-            return new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
+        // Weaken the center if so
+        if(blocksPresent == 1) {
+            if (layer.hasLeft() || layer.hasRight()){
+                return new float[]{0.0f, 0.0f, 0.0f, 0.0f};
 
-        } else {
+            } else{
 
-            if(layer.isAxisAlternate()) {
-                baseStability[2] *= 0.86f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
-                baseStability[3] *= 0.86f;
+                if (layer.isAxisAlternate()) {
+                    baseStability[2] *= 0.86f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
+                    baseStability[3] *= 0.86f;
 
-            } else {
-                baseStability[0] *= 0.86f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
-                baseStability[1] *= 0.86f;
+                } else {
+                    baseStability[0] *= 0.86f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
+                    baseStability[1] *= 0.86f;
+                }
+            }
+
+        // Rule 2: If 2 blocks are present, make it more unstable under the condition that it's the left or the right one missing.
+        // The center should be unaffected.
+        } else if (blocksPresent == 2){
+
+            // Missing lowest most block of an axis.
+            if(!layer.hasLeft()) {
+                // 2 = West; 0 = North
+                baseStability[layer.isAxisAlternate() ? 2 : 0] *= 0.96f;
+
+            } else if(!layer.hasRight()) {
+                // 3 = East; 1 = South
+                baseStability[layer.isAxisAlternate() ? 3 : 1] *= 0.96f;
             }
         }
 
-        // Rule 2: Layers have a fixed random variation to determine stability.
+        // Rule 3: Layers have a fixed random variation to determine stability.
         // Seed depends on the layer's depth (+ 1 to avoid a seed of 0) along with the tower's uuid.
         // Limit variation's scope by multiplying it by a small number and applying it as (1 - variation)
         // The right variation if shuffled along by me pressing a few random numbers to offset it a bit :D
@@ -218,7 +238,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         return baseStability;
     }
 
-    protected float calculateRemovalIntegrity(double baseTowerIntegrity, int layersBelow, int posInLayer) {
+    // Calculated the integrity if the block indicated in the coordinates was removed.
+    protected float calculateRemovalIntegrity(int layersBelow, int posInLayer) {
         float northCumulativeIntegrity = 1f;
         float southCumulativeIntegrity = 1f;
         float westCumulativeIntegrity = 1f;
@@ -228,14 +249,14 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         // While there are still layers below and the layer isn't the one we're looking for.
         while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
             JengaLayer c = currentLayer.get();
+            // Take integrity and apply it to the cumulative totals.
             float[] integrity = calculateSingleLayerIntegrity(c);
-
             northCumulativeIntegrity *= integrity[0];
             southCumulativeIntegrity *= integrity[1];
             westCumulativeIntegrity *= integrity[2];
             eastCumulativeIntegrity *= integrity[3];
 
-            currentLayer = c.getLayerBelow();
+            currentLayer = c.getLayerBelow(); // Switch out layer for next loop
         }
 
         if(currentLayer.isPresent()) { // Found the layer with the block!
@@ -246,23 +267,27 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             boolean hasCenter = (posInLayer != 1) && real.hasCenter();
             boolean hasRight = (posInLayer != 2) && real.hasRight();
 
+            // Fake jenga layer to simulate how the tower would react if a block was removed.
             EmulatedJengaLayer emu = new EmulatedJengaLayer(real, hasLeft, hasCenter, hasRight);
-            float[] integrity = calculateSingleLayerIntegrity(emu);
+            float[] integrity = calculateSingleLayerIntegrity(emu); // Take integrity and apply it to the cumulative totals.
             northCumulativeIntegrity *= integrity[0];
             southCumulativeIntegrity *= integrity[1];
             westCumulativeIntegrity *= integrity[2];
             eastCumulativeIntegrity *= integrity[3];
 
             float[] finalIntegrity = new float[] { northCumulativeIntegrity, southCumulativeIntegrity, westCumulativeIntegrity, eastCumulativeIntegrity, 1.0f };
-            int indexOfConcern = -1;
+            int indexOfConcern = -1; // -1 means index not found. Shouldn't be possible to retain this.
 
+            // Determine which index of finalIntegrity the block removal should
+            // be affected by.
             if(emu.isAxisAlternate()) {
                 switch (posInLayer) {
                     case 0:
                         indexOfConcern = 2;
                         break;
                     case 1:
-                        finalIntegrity[4] = (finalIntegrity[2] + finalIntegrity[3]) / 2f; // Store an average in 5
+                        // Create an average of both polar axis values. Then store it in index 4.
+                        finalIntegrity[4] = (finalIntegrity[2] + finalIntegrity[3]) / 2f;
                         indexOfConcern = 4;
                         break;
                     case 2:
@@ -275,7 +300,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                         indexOfConcern = 0;
                         break;
                     case 1:
-                        finalIntegrity[4] = (finalIntegrity[0] + finalIntegrity[1]) / 2f; // Store an average in 5
+                        // Create an average of both polar axis values. Then store it in index 4.
+                        finalIntegrity[4] = (finalIntegrity[0] + finalIntegrity[1]) / 2f;
                         indexOfConcern = 4;
                         break;
                     case 2:
