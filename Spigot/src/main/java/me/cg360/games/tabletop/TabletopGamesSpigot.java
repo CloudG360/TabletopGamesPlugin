@@ -1,11 +1,7 @@
 package me.cg360.games.tabletop;
 
-import me.cg360.games.tabletop.command.CommandTableGame;
-import me.cg360.games.tabletop.game.jenga.GBehaveJenga;
-import me.cg360.games.tabletop.ngapimicro.MicroGameProfile;
+import me.cg360.games.tabletop.command.CommandMicroGame;
 import me.cg360.games.tabletop.ngapimicro.MicroGameRegistry;
-import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
-import net.cg360.nsapi.commons.Check;
 import net.cg360.nsapi.commons.data.Settings;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -55,11 +51,11 @@ public class TabletopGamesSpigot extends JavaPlugin {
 
             // -- Register Commands --
 
-            PluginCommand cmdTableGame = this.getServer().getPluginCommand(CommandTableGame.COMMAND);
+            PluginCommand cmdTableGame = this.getServer().getPluginCommand(CommandMicroGame.COMMAND);
             if (cmdTableGame != null) {
-                cmdTableGame.setExecutor(new CommandTableGame());
-                cmdTableGame.setDescription(CommandTableGame.DESCRIPTION);
-                cmdTableGame.setUsage(CommandTableGame.USAGE);
+                cmdTableGame.setExecutor(new CommandMicroGame());
+                cmdTableGame.setDescription(CommandMicroGame.DESCRIPTION);
+                cmdTableGame.setUsage(CommandMicroGame.USAGE);
             }
 
         } catch (Exception err){

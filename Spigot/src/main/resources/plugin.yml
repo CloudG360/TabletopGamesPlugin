@@ -9,5 +9,5 @@ description: "Provides a micro-game api with games included such as: Jenga"
 depend: [ "NSAPICommons" ]
 
 commands:
-  tablegame:
+  microgame:
     description: "..."

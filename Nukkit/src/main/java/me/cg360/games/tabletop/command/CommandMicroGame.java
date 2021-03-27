@@ -18,12 +18,12 @@ import net.cg360.nsapi.commons.id.Identifier;
 
 import java.util.Optional;
 
-public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
+public class CommandMicroGame extends PluginCommand<TabletopGamesNukkit> {
 
-    public CommandTableGame() {
-        super("tablegame", TabletopGamesNukkit.get());
-        this.setDescription("Provides tools to manage the tabletop game registered in the Micro-Game registry.");
-        this.setUsage("/game start <String: Micro-Game ID>\nOR /game list");
+    public CommandMicroGame() {
+        super("microgame", TabletopGamesNukkit.get());
+        this.setDescription("Provides tools to manage the micro-games registered in the Micro-Game registry.");
+        this.setUsage("/microgame start <String: Micro-Game ID>\nOR /microgame list\nOR/microgame detail <String: game_id>");
 
         this.commandParameters.clear();
         this.commandParameters.put("start", new CommandParameter[]{
@@ -50,7 +50,7 @@ public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
         switch (args[0].toLowerCase()) {
 
             case "start": {
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.start")) return true;
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".microgame.start")) return true;
 
                 if (args.length < 2) {
                     sender.sendMessage(Util.eMessage("This sub-command requires 2 parameters. (Game ID)"));
@@ -81,7 +81,7 @@ public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
 
 
             case "list": {
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.list")) return true;
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".microgame.list")) return true;
 
                 sender.sendMessage(Util.fMessage("MICRO", TextFormat.DARK_AQUA, "The currently registered games are:"));
 
@@ -93,7 +93,7 @@ public class CommandTableGame extends PluginCommand<TabletopGamesNukkit> {
 
 
             case "detail": {
-                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".tablegame.detail")) return true;
+                if (!Util.permissionCheck(sender, Util.COMMAND_PERMISSION + ".microgame.detail")) return true;
 
                 if (args.length < 2) {
                     sender.sendMessage(Util.eMessage("This sub-command requires 2 parameters. (Game ID)"));
