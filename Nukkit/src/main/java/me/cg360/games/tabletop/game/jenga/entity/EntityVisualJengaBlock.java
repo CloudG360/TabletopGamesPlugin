@@ -96,7 +96,13 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
 
     @Override
     public void close() {
-        if(!closed) HandlerList.unregisterAll(this);
+        if(!closed) {
+            HandlerList.unregisterAll(this);
+
+            if(colliders != null) {
+                for (EntityJengaBlockCollider collider : colliders) collider.close();
+            }
+        }
         super.close();
     }
 

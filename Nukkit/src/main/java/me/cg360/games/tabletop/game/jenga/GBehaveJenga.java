@@ -127,10 +127,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         while (nextLayer.isPresent()) {
             JengaLayer currentLayer = nextLayer.get();
-
-            currentLayer.getLeft().ifPresent(EntityVisualJengaBlock::close);
-            currentLayer.getCenter().ifPresent(EntityVisualJengaBlock::close);
-            currentLayer.getRight().ifPresent(EntityVisualJengaBlock::close);
+            currentLayer.emptyLayer();
 
             nextLayer = currentLayer.getLayerBelow();
         }
