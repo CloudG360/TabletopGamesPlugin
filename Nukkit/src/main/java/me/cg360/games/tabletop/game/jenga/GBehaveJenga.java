@@ -218,15 +218,79 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         return baseStability;
     }
 
-    protected float calculateRemovalIntegrity(int layersBelow, int posInLayer, boolean alternateLayer) {
-        float northIntegrity = 1f;
-        float southIntegrity = 1f;
-        float eastIntegrity = 1f;
-        float westIntegrity = 1f;
+    protected float calculateRemovalIntegrity(double baseTowerIntegrity, int layersBelow, int posInLayer) {
+        float northCumulativeIntegrity = 1f;
+        float southCumulativeIntegrity = 1f;
+        float westCumulativeIntegrity = 1f;
+        float eastCumulativeIntegrity = 1f;
 
-        for()
+        Optional<JengaLayer> currentLayer = Optional.ofNullable(topTowerLayer);
+        // While there are still layers below and the layer isn't the one we're looking for.
+        while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
+            JengaLayer c = currentLayer.get();
+            float[] integrity = calculateSingleLayerIntegrity(c);
 
-        return 1.0f;
+            northCumulativeIntegrity *= integrity[0];
+            southCumulativeIntegrity *= integrity[1];
+            westCumulativeIntegrity *= integrity[2];
+            eastCumulativeIntegrity *= integrity[3];
+
+            currentLayer = c.getLayerBelow();
+        }
+
+        if(currentLayer.isPresent()) { // Found the layer with the block!
+            JengaLayer real = currentLayer.get();
+
+            // Set to false if it matches the block's posInLayer. Otherwise use the actual value.
+            boolean hasLeft = (posInLayer != 0) && real.hasLeft();
+            boolean hasCenter = (posInLayer != 1) && real.hasCenter();
+            boolean hasRight = (posInLayer != 2) && real.hasRight();
+
+            EmulatedJengaLayer emu = new EmulatedJengaLayer(real, hasLeft, hasCenter, hasRight);
+            float[] integrity = calculateSingleLayerIntegrity(emu);
+            northCumulativeIntegrity *= integrity[0];
+            southCumulativeIntegrity *= integrity[1];
+            westCumulativeIntegrity *= integrity[2];
+            eastCumulativeIntegrity *= integrity[3];
+
+            float[] finalIntegrity = new float[] { northCumulativeIntegrity, southCumulativeIntegrity, westCumulativeIntegrity, eastCumulativeIntegrity, 1.0f };
+            int indexOfConcern = -1;
+
+            if(emu.isAxisAlternate()) {
+                switch (posInLayer) {
+                    case 0:
+                        indexOfConcern = 2;
+                        break;
+                    case 1:
+                        finalIntegrity[4] = (finalIntegrity[2] + finalIntegrity[3]) / 2f; // Store an average in 5
+                        indexOfConcern = 4;
+                        break;
+                    case 2:
+                        indexOfConcern = 3;
+                        break;
+                }
+            } else {
+                switch (posInLayer) {
+                    case 0:
+                        indexOfConcern = 0;
+                        break;
+                    case 1:
+                        finalIntegrity[4] = (finalIntegrity[0] + finalIntegrity[1]) / 2f; // Store an average in 5
+                        indexOfConcern = 4;
+                        break;
+                    case 2:
+                        indexOfConcern = 1;
+                        break;
+                }
+            }
+
+            if(indexOfConcern == -1) throw new IllegalStateException("Block's calculation index is weirdchamp. Ensure 'posInLayer' is 0, 1, or 2.");
+
+            return finalIntegrity[indexOfConcern];
+        }
+
+        TabletopGamesNukkit.getLog().warning("The layer of the block specified was not in the tower during physics calculation. Werid.");
+        return 1.0f; // Block was not in the tower? :)))))
     }
 
 
