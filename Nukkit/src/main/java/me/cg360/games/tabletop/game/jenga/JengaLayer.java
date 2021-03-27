@@ -146,11 +146,48 @@ public class JengaLayer {
         return false;
     }
 
+    public boolean despawnLeft() {
+
+        if (left != null) {
+            left.close();
+            this.left = null;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean despawnCenter() {
+
+        if (center != null) {
+            center.close();
+            this.center = null;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean despawnRight() {
+
+        if (right != null) {
+            right.close();
+            this.right = null;
+            return true;
+        }
+        return false;
+    }
+
     /** Spawns all the blocks of the layer if not already spawned. */
     public void fillLayer() {
         spawnLeft();
         spawnCenter();
         spawnRight();
+    }
+
+    /** Despawns any existing blocks. */
+    public void emptyLayer() {
+        despawnLeft();
+        despawnCenter();
+        despawnRight();
     }
 
     /**
