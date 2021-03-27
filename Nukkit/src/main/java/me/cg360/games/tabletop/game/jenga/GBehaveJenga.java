@@ -162,13 +162,60 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             attacker.sendMessage(String.format("%sIs Layer 'Alternate'?: %s%s", TextFormat.GRAY, TextFormat.GOLD, isAlternateLayer ? "Yes!" : "No."));
         }
 
-        float v = calculateRemovalIntegrity(layersBelow, posInLayer) * 2f;
-        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit!"));
-        attacker.sendMessage(TextFormat.GRAY + "Integrity: " + TextFormat.GOLD + String.valueOf(v));
+        float integrity = calculateRemovalIntegrity(layersBelow, posInLayer) * 2f;
 
-        if(v <= 1f) {
-            attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format((1f - v)  * 100f) + "%");
+
+        Optional<JengaLayer> currentLayer = Optional.ofNullable(topTowerLayer);
+        // Get the layer selected.
+        while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
+            JengaLayer c = currentLayer.get();
+            currentLayer = c.getLayerBelow(); // Switch out layer for next loop
         }
+
+        if(!currentLayer.isPresent()) throw new IllegalStateException("Layer of block specified was not present.");
+        JengaLayer blockLayer = currentLayer.get();
+
+        // Check if the block actually exists (It always should)
+        // Then delete it.
+        // In the future, add an animation.
+        if(!attacker.isSneaking()) { // TODO: Temporary! Use items in the hotbar instead.
+            switch (posInLayer) {
+                case 0:
+                    if (!blockLayer.hasLeft()) return;
+                    blockLayer.despawnLeft();
+                    break;
+
+                case 1:
+                    if (!blockLayer.hasCenter()) return;
+                    blockLayer.despawnCenter();
+                    break;
+
+                case 2:
+                    if (!blockLayer.hasRight()) return;
+                    blockLayer.despawnRight();
+                    break;
+            }
+        }
+
+        attacker.sendMessage(Util.fMessage("DEBUG", TextFormat.GOLD, "Block Hit!"));
+        attacker.sendMessage(TextFormat.GRAY + "Integrity: " + TextFormat.GOLD + String.valueOf(integrity));
+
+        // If integrity is below 1, do a random check to see if the tower falls.
+        if(integrity <= 1f){
+            float chance = 1f - integrity;
+            attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format(chance  * 100f) + "%");
+
+            if(!attacker.isSneaking()) {  // TODO: Temporary! Use items in the hotbar instead.
+                float roll = new Random().nextFloat();
+                if(roll <= chance) {
+                    attacker.sendMessage(Util.fMessage("UH OH!", TextFormat.DARK_RED, "The tower has fallen!"));
+                    this.getWatchdog().stopGame();
+                }
+            }
+
+        } else attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + "0.0%");
+
+
     }
 
     // NORTH = -Z
@@ -319,9 +366,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
             return finalIntegrity[indexOfConcern];
         }
-
-        TabletopGamesNukkit.getLog().warning("The layer of the block specified was not in the tower during physics calculation. Werid.");
-        return 1.0f; // Block was not in the tower? :)))))
+        throw new IllegalStateException("Layer of block specified was not in the tower during physics calculation."); // Block was not in the tower? :)))))
     }
 
 
