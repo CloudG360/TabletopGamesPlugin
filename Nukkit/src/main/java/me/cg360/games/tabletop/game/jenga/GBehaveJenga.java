@@ -163,6 +163,74 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         }
     }
 
+    // NORTH = -Z
+    // SOUTH = +Z
+    // WEST =  -X
+    // EAST  = +X
+
+    // Assumptions made in calculations:
+    // - Each layer of the tower alternates in axis.
+    // - The floor below is stable (Calculating for each layer and merging fixes this ofc)
+
+    // Stored { NORTH, SOUTH, WEST, EAST }
+    protected float[] calculateSingleLayerIntegrity(JengaLayer layer) {
+        int layersPresent = 0;
+        float[] baseStability = new float[]{ 1.0f, 1.0f, 1.0f, 1.0f };
+        if(layer.hasLeft()) layersPresent++;
+        if(layer.hasCenter()) layersPresent++;
+        if(layer.hasRight()) layersPresent++;
+
+        // Rule 0: If a layer is empty, it's completely unstable :D
+        if(layersPresent == 0) return new float[]{ 0.0f, 0.0f, 0.0f, 0.0f};
+
+        // Rule 1: If only one block is present, it ***must*** be the center block else gravity happens.
+        if((layersPresent == 1) && (layer.hasLeft() || layer.hasRight())) {
+            return new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        } else {
+
+            if(layer.isAxisAlternate()) {
+                baseStability[2] *= 0.86f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
+                baseStability[3] *= 0.86f;
+
+            } else {
+                baseStability[0] *= 0.86f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
+                baseStability[1] *= 0.86f;
+            }
+        }
+
+        // Rule 2: Layers have a fixed random variation to determine stability.
+        // Seed depends on the layer's depth (+ 1 to avoid a seed of 0) along with the tower's uuid.
+        // Limit variation's scope by multiplying it by a small number and applying it as (1 - variation)
+        // The right variation if shuffled along by me pressing a few random numbers to offset it a bit :D
+        float variationLeft = 0.1f * new Random((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
+        float variationRight = 0.1f * new Random(28351 + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
+        if(layer.isAxisAlternate()) {
+            baseStability[2] *= (1 - variationLeft);
+            baseStability[3] *= (1 - variationRight);
+
+        } else {
+            baseStability[0] *= (1 - variationLeft);
+            baseStability[1] *= (1 - variationRight);
+        }
+
+
+        return baseStability;
+    }
+
+    protected float calculateRemovalIntegrity(int layersBelow, int posInLayer, boolean alternateLayer) {
+        float northIntegrity = 1f;
+        float southIntegrity = 1f;
+        float eastIntegrity = 1f;
+        float westIntegrity = 1f;
+
+        for()
+
+        return 1.0f;
+    }
+
+
+
     @EventHandler
     public void onBlockDamage(EntityDamageByEntityEvent event) {
 
