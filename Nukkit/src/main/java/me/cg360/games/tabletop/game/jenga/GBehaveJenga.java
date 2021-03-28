@@ -225,7 +225,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
                     Optional<JengaLayer> l = Optional.ofNullable(topTowerLayer);
 
-                    while (l.isPresent() && (l.get().getLayersBelowCount() != layersBelow)) {
+                    while (l.isPresent()) {
                         JengaLayer c = l.get();
 
                         c.getLeft().ifPresent(this::applyExplosionVelocity);
@@ -233,9 +233,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                         c.getRight().ifPresent(this::applyExplosionVelocity);
 
                         l = c.getLayerBelow(); // Switch out layer for next loop
-                        //TODO ME:
-                        // Top shouldn't collapse the tower at all.
-                        // Add bottom calcs
                     }
 
 
