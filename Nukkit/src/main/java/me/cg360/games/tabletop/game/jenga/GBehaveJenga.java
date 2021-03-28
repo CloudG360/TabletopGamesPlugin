@@ -34,8 +34,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     public static final double EXPLODE_MULTIPLIER = 1.2f;
 
     // Used to determine how much of an effect the top & bottom calculations have.
-    public static final float TOP_FALL_WEIGHT = 0.3f;
-    public static final float BOTTOM_FALL_WEIGHT = 0.6f;
+    public static final float TOP_FALL_WEIGHT = 1.1f;
+    public static final float BOTTOM_FALL_WEIGHT = 0.98f;
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -355,10 +355,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             // Take integrity and apply it to the cumulative totals.
             if(c != topTowerLayer) {
                 float[] integrity = calculateSingleLayerIntegrity(c);
-                northCumulativeIntegrity *= (integrity[0] * TOP_FALL_WEIGHT);
-                southCumulativeIntegrity *= (integrity[1] * TOP_FALL_WEIGHT);
-                westCumulativeIntegrity *= (integrity[2] * TOP_FALL_WEIGHT);
-                eastCumulativeIntegrity *= (integrity[3] * TOP_FALL_WEIGHT);
+                northCumulativeIntegrity *= Math.min(1f, integrity[0] * TOP_FALL_WEIGHT);
+                southCumulativeIntegrity *= Math.min(1f, integrity[1] * TOP_FALL_WEIGHT);
+                westCumulativeIntegrity *= Math.min(1f, integrity[2] * TOP_FALL_WEIGHT);
+                eastCumulativeIntegrity *= Math.min(1f, integrity[3] * TOP_FALL_WEIGHT);
             }
 
             currentLayer = c.getLayerBelow(); // Switch out layer for next loop
@@ -378,10 +378,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             // The top layer shouldn't affect integrity.
             if(real != topTowerLayer){
                 float[] blockIntegrity = calculateSingleLayerIntegrity(emu); // Take integrity and apply it to the cumulative totals.
-                northCumulativeIntegrity *= blockIntegrity[0];
-                southCumulativeIntegrity *= blockIntegrity[1];
-                westCumulativeIntegrity *= blockIntegrity[2];
-                eastCumulativeIntegrity *= blockIntegrity[3];
+                northCumulativeIntegrity *= Math.min(1f, blockIntegrity[0]);
+                southCumulativeIntegrity *= Math.min(1f, blockIntegrity[1]);
+                westCumulativeIntegrity *= Math.min(1f, blockIntegrity[2]);
+                eastCumulativeIntegrity *= Math.min(1f, blockIntegrity[3]);
             }
 
 
@@ -392,10 +392,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                 JengaLayer c = nextLayer.get();
                 // Take integrity and apply it to the cumulative totals.
                 float[] bottomIntegrity = calculateSingleLayerIntegrity(c);
-                northCumulativeIntegrity *= (bottomIntegrity[0] * BOTTOM_FALL_WEIGHT);
-                southCumulativeIntegrity *= (bottomIntegrity[1] * BOTTOM_FALL_WEIGHT);
-                westCumulativeIntegrity *= (bottomIntegrity[2] * BOTTOM_FALL_WEIGHT);
-                eastCumulativeIntegrity *= (bottomIntegrity[3] * BOTTOM_FALL_WEIGHT);
+                northCumulativeIntegrity *= Math.min(1f, bottomIntegrity[0] * BOTTOM_FALL_WEIGHT);
+                southCumulativeIntegrity *= Math.min(1f, bottomIntegrity[1] * BOTTOM_FALL_WEIGHT);
+                westCumulativeIntegrity *= Math.min(1f, bottomIntegrity[2] * BOTTOM_FALL_WEIGHT);
+                eastCumulativeIntegrity *= Math.min(1f, bottomIntegrity[3] * BOTTOM_FALL_WEIGHT);
 
                 nextLayer = c.getLayerBelow(); // Switch out layer for next loop
             }
