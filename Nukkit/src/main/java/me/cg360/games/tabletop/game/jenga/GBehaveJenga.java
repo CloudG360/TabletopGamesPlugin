@@ -33,6 +33,9 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     public static final double EXPLODE_MULTIPLIER = 1.2f;
 
+    // Used to determine how much of an effect the top & bottom calculations have.
+    public static final float TOP_FALL_WEIGHT = 0.3f;
+    public static final float BOTTOM_FALL_WEIGHT = 0.6f;
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -348,19 +351,22 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         float westCumulativeIntegrity = 1f;
         float eastCumulativeIntegrity = 1f;
 
-        Optional<JengaLayer> currentLayer = topTowerLayer.getLayerBelow(); // Top layer is immune.
+        Optional<JengaLayer> currentLayer = Optional.ofNullable(topTowerLayer); // Top layer is immune.
         // While there are still layers below and the layer isn't the one we're looking for.
         while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
             JengaLayer c = currentLayer.get();
             // Take integrity and apply it to the cumulative totals.
-            float[] integrity = calculateSingleLayerIntegrity(c);
-            northCumulativeIntegrity *= integrity[0];
-            southCumulativeIntegrity *= integrity[1];
-            westCumulativeIntegrity *= integrity[2];
-            eastCumulativeIntegrity *= integrity[3];
+            if(c != topTowerLayer) {
+                float[] integrity = calculateSingleLayerIntegrity(c);
+                northCumulativeIntegrity *= (integrity[0] * TOP_FALL_WEIGHT);
+                southCumulativeIntegrity *= (integrity[1] * TOP_FALL_WEIGHT);
+                westCumulativeIntegrity *= (integrity[2] * TOP_FALL_WEIGHT);
+                eastCumulativeIntegrity *= (integrity[3] * TOP_FALL_WEIGHT);
+            }
 
             currentLayer = c.getLayerBelow(); // Switch out layer for next loop
         }
+
 
         if(currentLayer.isPresent()) { // Found the layer with the block!
             JengaLayer real = currentLayer.get();
@@ -372,11 +378,31 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
             // Fake jenga layer to simulate how the tower would react if a block was removed.
             EmulatedJengaLayer emu = new EmulatedJengaLayer(real, hasLeft, hasCenter, hasRight);
-            float[] integrity = calculateSingleLayerIntegrity(emu); // Take integrity and apply it to the cumulative totals.
-            northCumulativeIntegrity *= integrity[0];
-            southCumulativeIntegrity *= integrity[1];
-            westCumulativeIntegrity *= integrity[2];
-            eastCumulativeIntegrity *= integrity[3];
+            // The top layer shouldn't affect integrity.
+            if(real != topTowerLayer){
+                float[] blockIntegrity = calculateSingleLayerIntegrity(emu); // Take integrity and apply it to the cumulative totals.
+                northCumulativeIntegrity *= blockIntegrity[0];
+                southCumulativeIntegrity *= blockIntegrity[1];
+                westCumulativeIntegrity *= blockIntegrity[2];
+                eastCumulativeIntegrity *= blockIntegrity[3];
+            }
+
+
+            // Review layers below and apply their integrity checks.
+            Optional<JengaLayer> nextLayer = real.getLayerBelow();
+
+            while (nextLayer.isPresent()) {
+                JengaLayer c = nextLayer.get();
+                // Take integrity and apply it to the cumulative totals.
+                float[] bottomIntegrity = calculateSingleLayerIntegrity(c);
+                northCumulativeIntegrity *= (bottomIntegrity[0] * BOTTOM_FALL_WEIGHT);
+                southCumulativeIntegrity *= (bottomIntegrity[1] * BOTTOM_FALL_WEIGHT);
+                westCumulativeIntegrity *= (bottomIntegrity[2] * BOTTOM_FALL_WEIGHT);
+                eastCumulativeIntegrity *= (bottomIntegrity[3] * BOTTOM_FALL_WEIGHT);
+
+                nextLayer = c.getLayerBelow(); // Switch out layer for next loop
+            }
+
 
             float[] finalIntegrity = new float[] { northCumulativeIntegrity, southCumulativeIntegrity, westCumulativeIntegrity, eastCumulativeIntegrity, 1.0f };
             int indexOfConcern = -1; // -1 means index not found. Shouldn't be possible to retain this.

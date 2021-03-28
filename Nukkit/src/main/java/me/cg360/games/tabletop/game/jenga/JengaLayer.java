@@ -267,4 +267,7 @@ public class JengaLayer {
     public boolean hasCenter() { return getCenter().isPresent(); }
     public boolean hasRight() { return getRight().isPresent(); }
 
+    public boolean isFull () { return hasLeft() && hasCenter() && hasRight(); }
+    public boolean isEmpty () { return (!hasLeft()) && (!hasCenter()) && (!hasRight()); }
+
 }
