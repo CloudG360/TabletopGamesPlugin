@@ -35,7 +35,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     // Used to determine how much of an effect the top & bottom calculations have.
     public static final float TOP_FALL_WEIGHT = 1.1f;
-    public static final float BOTTOM_FALL_WEIGHT = 0.98f;
+    public static final float BOTTOM_FALL_WEIGHT = 1.02f;
+
+    //
+    public static final float BLOCK_VARIATION_SCALE = 0.3f;
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -326,8 +329,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         // Seed depends on the layer's depth (+ 1 to avoid a seed of 0) along with the tower's uuid.
         // Limit variation's scope by multiplying it by a small number and applying it as (1 - variation)
         // The right variation if shuffled along by me pressing a few random numbers to offset it a bit :D
-        float variationLeft = 0.2f * new Random((layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
-        float variationRight = 0.2f * new Random((layer.getLayersBelowCount() * 1234L) + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
+        float variationLeft =  BLOCK_VARIATION_SCALE * new Random((layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
+        float variationRight = BLOCK_VARIATION_SCALE * new Random((layer.getLayersBelowCount() * 1234L) + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
         if(layer.isAxisAlternate()) {
             baseStability[2] *= (1 - variationLeft);
             baseStability[3] *= (1 - variationRight);
