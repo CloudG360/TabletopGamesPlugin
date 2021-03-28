@@ -12,10 +12,12 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.level.ChunkUnloadEvent;
 import cn.nukkit.event.level.LevelUnloadEvent;
 import cn.nukkit.event.server.ServerStopEvent;
+import cn.nukkit.level.Position;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddPlayerPacket;
+import cn.nukkit.scheduler.Task;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 
 import javax.imageio.ImageIO;
@@ -29,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class EntityVisualJengaBlock extends EntityHuman implements Listener {
+
+    public static final float GRAVITY = -0.08f;
 
     protected static final String GEOMETRY;
     protected static final BufferedImage DATA;
@@ -56,7 +60,13 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         }
     }
 
+
+
     protected ArrayList<EntityJengaBlockCollider> colliders = new ArrayList<>();
+
+    protected Vector3 acceleration;
+    protected Vector3 velocity;
+    protected boolean isCustomPhysicsEnabled;
 
     public EntityVisualJengaBlock(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -65,6 +75,10 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
 
     @Override
     protected void initEntity() {
+        this.isCustomPhysicsEnabled = false;
+        this.acceleration = new Vector3(0, GRAVITY, 0);
+        this.velocity = new Vector3(0, 0, 0);
+
         this.skin = new Skin(); // Update skin
         this.skin.setGeometryData(GEOMETRY);
         this.skin.setGeometryName("geometry.game.jenga_block");
@@ -92,7 +106,32 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         this.skin.generateSkinId(this.getUniqueId().toString());
 
         TabletopGamesNukkit.get().getServer().getPluginManager().registerEvents(this, TabletopGamesNukkit.get());
+
+        // Custom (although basic) physics
+        TabletopGamesNukkit.getScheduler().scheduleDelayedRepeatingTask(new Task() {
+
+            @Override
+            public void onRun(int currentTick) {
+                if((!TabletopGamesNukkit.isRunning()) && (!thiss().isClosed())) this.cancel();
+
+                if(thiss().isCustomPhysicsEnabled()){
+                    thiss().velocity = velocity.add(acceleration);
+                    Position pos = thiss().getPosition().add(velocity); // Get new position
+
+                    thiss().setPosition(pos);
+                    for (EntityJengaBlockCollider collider : colliders) {
+                        collider.updateAngleToParent();
+                    }
+                }
+            }
+
+        }, 1, 1);
     }
+
+    // Used to workaround "this" not working in the physics calc
+    private EntityVisualJengaBlock thiss() { return this; }
+
+
 
     @Override
     public void close() {
@@ -159,12 +198,17 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
 
     @Override
     public boolean setMotion(Vector3 motion) {
-        if(colliders != null) {
-            for (EntityJengaBlockCollider collider : colliders) {
-                collider.setMotion(motion);
+        if(isCustomPhysicsEnabled) {
+            this.velocity = new Vector3(motion.getX(), motion.getY(), motion.getZ());
+            return true;
+        } else {
+            if (colliders != null) {
+                for (EntityJengaBlockCollider collider : colliders) {
+                    collider.setMotion(motion);
+                }
             }
+            return super.setMotion(motion);
         }
-        return super.setMotion(motion);
     }
 
     @Override
@@ -191,14 +235,17 @@ public class EntityVisualJengaBlock extends EntityHuman implements Listener {
         return false;
     }
 
+
+
     @Override public float getHeight() { return 0f; }
     @Override public float getWidth() { return 0f; }
     @Override public float getLength() { return 0f; }
 
+    public boolean isCustomPhysicsEnabled() { return this.isCustomPhysicsEnabled; }
+    public ArrayList<EntityJengaBlockCollider> getColliders() { return colliders; }
 
-
-    public ArrayList<EntityJengaBlockCollider> getColliders() {
-        return colliders;
+    public void setCustomPhysicsEnabled(boolean isCustomPhysicsEnabled) {
+        this.isCustomPhysicsEnabled = isCustomPhysicsEnabled;
     }
 
 

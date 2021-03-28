@@ -7,10 +7,12 @@ import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.ParticleEffect;
 import cn.nukkit.level.Sound;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.*;
 import cn.nukkit.utils.TextFormat;
 import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.Util;
+import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlockCollider;
 import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
@@ -29,7 +31,7 @@ import java.util.*;
 
 public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
-
+    public static final double EXPLODE_MULTIPLIER = 1.2f;
 
 
     protected Settings initSettings;
@@ -216,13 +218,55 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                     for(Player p: players) p.sendMessage(Util.fMessage("UH OH!", TextFormat.DARK_RED, String.format("%s%s toppled the tower!", attacker.getName(), TextFormat.GRAY)));
                     attacker.getLevel().addSound(origin, Sound.RANDOM_EXPLODE);
                     attacker.getLevel().addParticleEffect(origin, ParticleEffect.HUGE_EXPLOSION_LEVEL);
-                    this.getWatchdog().stopGame();
+
+
+                    Optional<JengaLayer> l = Optional.ofNullable(topTowerLayer);
+
+                    while (l.isPresent() && (l.get().getLayersBelowCount() != layersBelow)) {
+                        JengaLayer c = l.get();
+
+                        c.getLeft().ifPresent(this::applyExplosionVelocity);
+                        c.getCenter().ifPresent(this::applyExplosionVelocity);
+                        c.getRight().ifPresent(this::applyExplosionVelocity);
+
+                        l = c.getLayerBelow(); // Switch out layer for next loop
+                        //TODO ME:
+                        // Top shouldn't collapse the tower at all.
+                        // Add bottom calcs
+                    }
+
+
+                    TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
+                        if(TabletopGamesNukkit.isRunning()) {
+                            this.getWatchdog().stopGame();
+                        }
+                    }, 40);
+
                 }
             }
 
         } else attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + "0.0%");
 
 
+    }
+
+    protected void applyExplosionVelocity(EntityVisualJengaBlock b) {
+        Random r = new Random();
+        // Remove colliders and send block in a direction.
+        for(EntityJengaBlockCollider collide: new ArrayList<>(b.getColliders())) {
+            collide.close();
+            b.getColliders().remove(collide);
+        }
+
+        // Get delta, add variation and normalize.
+        double varX = (r.nextDouble() - 0.5d);
+        double varZ = (r.nextDouble() - 0.5d);
+        Vector3 delta = b.getLocation().subtract(origin).add(varX, 0, varZ);
+        Vector3 direction = new Vector3(delta.getX(), 0, delta.getZ()).normalize().add(0, 0.3d, 0);
+
+        Vector3 velocity = direction.multiply(EXPLODE_MULTIPLIER * b.getScale());
+        b.setCustomPhysicsEnabled(true);
+        b.setMotion(velocity);
     }
 
     // NORTH = -Z
