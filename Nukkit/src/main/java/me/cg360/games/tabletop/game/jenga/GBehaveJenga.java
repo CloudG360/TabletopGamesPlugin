@@ -348,7 +348,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         float westCumulativeIntegrity = 1f;
         float eastCumulativeIntegrity = 1f;
 
-        Optional<JengaLayer> currentLayer = Optional.ofNullable(topTowerLayer);
+        Optional<JengaLayer> currentLayer = topTowerLayer.getLayerBelow(); // Top layer is immune.
         // While there are still layers below and the layer isn't the one we're looking for.
         while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
             JengaLayer c = currentLayer.get();
