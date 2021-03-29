@@ -45,9 +45,9 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
     // The highest value a layer integrity calculation can go. Above 1 allows the tower to become more stable.
     public static final float LAYER_THRESHOLD = 1.1f;
     // How much can each block randomly vary by in stability.
-    public static final float BLOCK_VARIATION_SCALE = 0.24f;
+    public static final float BLOCK_VARIATION_SCALE = 0.32f;
     // How likely is the block variation to restore some integrity.
-    public static final float BLOCK_VARIATION_INTEGRITY_RESTORE = 0.2f;
+    public static final float BLOCK_VARIATION_INTEGRITY_RESTORE = 0.25f;
 
     // When a layer only has one block (Center), what's it's stability score.
     public static final float SINGLE_CENTER_STABILITY = 0.68f;
@@ -234,7 +234,7 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         // If integrity is below 1, do a random check to see if the tower falls.
         if(integrity <= 1f){
-            float chance = 1f - integrity;
+            float chance = Math.min(1f, 1f - integrity);
             attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format(chance  * 100f) + "%"));
 
             if(!attacker.isSneaking()) {  // TODO: Temporary! Use items in the hotbar instead.
