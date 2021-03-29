@@ -182,9 +182,10 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         if(!currentLayer.isPresent()) throw new IllegalStateException("Layer of block specified was not present.");
         JengaLayer blockLayer = currentLayer.get();
 
+
         // Check if the block actually exists (It always should)
-        // Then delete it.
-        // In the future, add an animation.
+        // Then delete it and add a new one to the top.
+        // This if statement manages stuff without the context of a toppling tower :)
         if(!attacker.isSneaking()) { // TODO: Temporary! Use items in the hotbar instead.
             switch (posInLayer) {
                 case 0:
@@ -208,6 +209,12 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                 player.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, String.format("%s%s took a block from the tower!", attacker.getName(), TextFormat.GRAY)));
             }
 
+            // Attempt to add a block. If it isn't added, add a new layer.
+            if(!addBlockToTop()) {
+                JengaLayer oldLayer = topTowerLayer;
+                topTowerLayer = new JengaLayer(oldLayer);
+                addBlockToTop();
+            }
         }
 
         // If integrity is below 1, do a random check to see if the tower falls.
@@ -243,16 +250,34 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                             this.getWatchdog().stopGame();
                         }
                     }, 25);
-
-                // Else
-                } else {
-
                 }
             }
 
         } else attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Fall Chance: " + TextFormat.GOLD + "0.0%"));
 
+    }
 
+    // It's important this isn't infinitely recursive, else a EmulatedJengaLayer could
+    // crash the server running this plugin. :)
+    /** @return true if a block was added to the top layer. */
+    protected boolean addBlockToTop() {
+
+        if(!topTowerLayer.hasLeft()) {
+            topTowerLayer.spawnLeft();
+            return true;
+        }
+
+        if(!topTowerLayer.hasCenter()) {
+            topTowerLayer.spawnCenter();
+            return true;
+        }
+
+        if(!topTowerLayer.hasRight()) {
+            topTowerLayer.spawnRight();
+            return true;
+        }
+
+        return false;
     }
 
     protected void applyExplosionVelocity(EntityVisualJengaBlock b) {
