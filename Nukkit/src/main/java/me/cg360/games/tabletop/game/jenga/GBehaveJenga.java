@@ -210,20 +210,19 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
         }
 
-        attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Block Hit!"));
-
         // If integrity is below 1, do a random check to see if the tower falls.
         if(integrity <= 1f){
             float chance = 1f - integrity;
-            attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format(chance  * 100f) + "%");
+            attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Fall Chance: " + TextFormat.GOLD + new DecimalFormat("0.0").format(chance  * 100f) + "%"));
 
             if(!attacker.isSneaking()) {  // TODO: Temporary! Use items in the hotbar instead.
                 float roll = new Random().nextFloat();
 
+                // If tower toppled: explode :)
                 if(roll <= chance) {
                     for(Player p: players) p.sendMessage(Util.fMessage("UH OH!", TextFormat.DARK_RED, String.format("%s%s toppled the tower!", attacker.getName(), TextFormat.GRAY)));
                     attacker.getLevel().addSound(origin, Sound.RANDOM_EXPLODE);
-                    attacker.getLevel().addParticleEffect(origin, ParticleEffect.HUGE_EXPLOSION_LEVEL);
+                    attacker.getLevel().addParticleEffect(origin.add(0, 2,0), ParticleEffect.HUGE_EXPLOSION_LEVEL);
 
 
                     Optional<JengaLayer> l = Optional.ofNullable(topTowerLayer);
@@ -238,17 +237,20 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
                         l = c.getLayerBelow(); // Switch out layer for next loop
                     }
 
-
+                    // Delay the game end so the entities last enough to show the explosion.
                     TabletopGamesNukkit.getScheduler().scheduleDelayedTask(TabletopGamesNukkit.get(), () -> {
                         if(TabletopGamesNukkit.isRunning()) {
                             this.getWatchdog().stopGame();
                         }
-                    }, 40);
+                    }, 25);
+
+                // Else
+                } else {
 
                 }
             }
 
-        } else attacker.sendMessage(TextFormat.GRAY + "Fall Chance: " + TextFormat.GOLD + "0.0%");
+        } else attacker.sendMessage(Util.fMessage("JENGA", TextFormat.GOLD, "Fall Chance: " + TextFormat.GOLD + "0.0%"));
 
 
     }
