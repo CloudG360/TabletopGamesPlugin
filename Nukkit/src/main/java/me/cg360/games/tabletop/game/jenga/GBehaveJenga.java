@@ -33,12 +33,27 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
     public static final double EXPLODE_MULTIPLIER = 1.2f;
 
-    // Used to determine how much of an effect the top & bottom calculations have.
-    public static final float TOP_FALL_WEIGHT = 1.1f;
-    public static final float BOTTOM_FALL_WEIGHT = 1.02f;
+    // Used as a multiplier for each section. Values below 1 bring it closer, values above push it further
+    // TODO: These values make more sense now. Work on tweaking them.
+    public static final float TOP_FALL_TWEAK = 0.85f;
+    public static final float CURRENT_FALL_TWEAK = 1.04f;
+    public static final float BOTTOM_FALL_TWEAK = 1f;
 
-    //
-    public static final float BLOCK_VARIATION_SCALE = 0.3f;
+    // Reduces the weight of any center block based removals.
+    public static final float CENTER_BLOCK_TWEAK = 0.9f;
+
+    // The highest value a layer integrity calculation can go. Above 1 allows the tower to become more stable.
+    public static final float LAYER_THRESHOLD = 1.1f;
+    // How much can each block randomly vary by in stability.
+    public static final float BLOCK_VARIATION_SCALE = 0.24f;
+    // How likely is the block variation to restore some integrity.
+    public static final float BLOCK_VARIATION_INTEGRITY_RESTORE = 0.2f;
+
+    // When a layer only has one block (Center), what's it's stability score.
+    public static final float SINGLE_CENTER_STABILITY = 0.68f;
+    // When a layer only has 2 blocks, what's it's stability score.
+    public static final float DUO_LAYER_STABILITY = 0.87f;
+
 
     protected Settings initSettings;
     protected ArrayList<Player> players;
@@ -328,12 +343,12 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             } else{
 
                 if (layer.isAxisAlternate()) {
-                    baseStability[2] *= 0.75f; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
-                    baseStability[3] *= 0.75f;
+                    baseStability[2] *= SINGLE_CENTER_STABILITY; // Blocks stretch across the tower along axis Z. Destabilize X as there's no blocks on each edge.
+                    baseStability[3] *= SINGLE_CENTER_STABILITY;
 
                 } else {
-                    baseStability[0] *= 0.75f; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
-                    baseStability[1] *= 0.75f;
+                    baseStability[0] *= SINGLE_CENTER_STABILITY; // Blocks stretch across the tower along axis X. Destabilize Z as there's no blocks on each edge.
+                    baseStability[1] *= SINGLE_CENTER_STABILITY;
                 }
             }
 
@@ -344,11 +359,11 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             // Missing lowest most block of an axis.
             if(!layer.hasLeft()) {
                 // 2 = West; 0 = North
-                baseStability[layer.isAxisAlternate() ? 2 : 0] *= 0.9f;
+                baseStability[layer.isAxisAlternate() ? 2 : 0] *= DUO_LAYER_STABILITY;
 
             } else if(!layer.hasRight()) {
                 // 3 = East; 1 = South
-                baseStability[layer.isAxisAlternate() ? 3 : 1] *= 0.9f;
+                baseStability[layer.isAxisAlternate() ? 3 : 1] *= DUO_LAYER_STABILITY;
             }
         }
 
@@ -356,8 +371,8 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         // Seed depends on the layer's depth (+ 1 to avoid a seed of 0) along with the tower's uuid.
         // Limit variation's scope by multiplying it by a small number and applying it as (1 - variation)
         // The right variation if shuffled along by me pressing a few random numbers to offset it a bit :D
-        float variationLeft =  BLOCK_VARIATION_SCALE * new Random((layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat();
-        float variationRight = BLOCK_VARIATION_SCALE * new Random((layer.getLayersBelowCount() * 1234L) + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat();
+        float variationLeft =  BLOCK_VARIATION_SCALE * (new Random((layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits()).nextFloat() - BLOCK_VARIATION_INTEGRITY_RESTORE);
+        float variationRight = BLOCK_VARIATION_SCALE * (new Random((layer.getLayersBelowCount() * 1234L) + ((1 + layer.getLayersBelowCount()) * layer.getTowerUUID().getLeastSignificantBits())).nextFloat() - BLOCK_VARIATION_INTEGRITY_RESTORE);
         if(layer.isAxisAlternate()) {
             baseStability[2] *= (1 - variationLeft);
             baseStability[3] *= (1 - variationRight);
@@ -366,7 +381,6 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             baseStability[0] *= (1 - variationLeft);
             baseStability[1] *= (1 - variationRight);
         }
-
 
         return baseStability;
     }
@@ -379,16 +393,35 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
         float eastCumulativeIntegrity = 1f;
 
         Optional<JengaLayer> currentLayer = Optional.ofNullable(topTowerLayer); // Top layer is immune.
+
         // While there are still layers below and the layer isn't the one we're looking for.
         while (currentLayer.isPresent() && (currentLayer.get().getLayersBelowCount() != layersBelow)) {
             JengaLayer c = currentLayer.get();
+
             // Take integrity and apply it to the cumulative totals.
+            // Current Rules:
+            // - Keep below the LAYER THRESHOLD
+            // - Don't drag anything wiith a value of 0 or below.
+            // - Drag center blocks closer to 1f of stability
             if(c != topTowerLayer) {
                 float[] integrity = calculateSingleLayerIntegrity(c);
-                northCumulativeIntegrity *= Math.min(1f, integrity[0] * TOP_FALL_WEIGHT);
-                southCumulativeIntegrity *= Math.min(1f, integrity[1] * TOP_FALL_WEIGHT);
-                westCumulativeIntegrity *= Math.min(1f, integrity[2] * TOP_FALL_WEIGHT);
-                eastCumulativeIntegrity *= Math.min(1f, integrity[3] * TOP_FALL_WEIGHT);
+
+                northCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(integrity[0], TOP_FALL_TWEAK, posInLayer)
+                );
+                southCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(integrity[1], TOP_FALL_TWEAK, posInLayer)
+                );
+                westCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(integrity[2], TOP_FALL_TWEAK, posInLayer)
+                );
+                eastCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(integrity[3], TOP_FALL_TWEAK, posInLayer)
+                );
             }
 
             currentLayer = c.getLayerBelow(); // Switch out layer for next loop
@@ -405,13 +438,31 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
             // Fake jenga layer to simulate how the tower would react if a block was removed.
             EmulatedJengaLayer emu = new EmulatedJengaLayer(real, hasLeft, hasCenter, hasRight);
+
             // The top layer shouldn't affect integrity.
             if(real != topTowerLayer){
                 float[] blockIntegrity = calculateSingleLayerIntegrity(emu); // Take integrity and apply it to the cumulative totals.
-                northCumulativeIntegrity *= Math.min(1f, blockIntegrity[0]);
-                southCumulativeIntegrity *= Math.min(1f, blockIntegrity[1]);
-                westCumulativeIntegrity *= Math.min(1f, blockIntegrity[2]);
-                eastCumulativeIntegrity *= Math.min(1f, blockIntegrity[3]);
+
+                // Current Rules:
+                // - Keep below the LAYER THRESHOLD
+                // - Don't drag anything wiith a value of 0 or below.
+                // - Drag center blocks closer to 1f of stability
+                northCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(blockIntegrity[0], CURRENT_FALL_TWEAK, posInLayer)
+                );
+                southCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(blockIntegrity[1], CURRENT_FALL_TWEAK, posInLayer)
+                );
+                westCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(blockIntegrity[2], CURRENT_FALL_TWEAK, posInLayer)
+                );
+                eastCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(blockIntegrity[3], CURRENT_FALL_TWEAK, posInLayer)
+                );
             }
 
 
@@ -420,12 +471,30 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
 
             while (nextLayer.isPresent()) {
                 JengaLayer c = nextLayer.get();
+
                 // Take integrity and apply it to the cumulative totals.
                 float[] bottomIntegrity = calculateSingleLayerIntegrity(c);
-                northCumulativeIntegrity *= Math.min(1f, bottomIntegrity[0] * BOTTOM_FALL_WEIGHT);
-                southCumulativeIntegrity *= Math.min(1f, bottomIntegrity[1] * BOTTOM_FALL_WEIGHT);
-                westCumulativeIntegrity *= Math.min(1f, bottomIntegrity[2] * BOTTOM_FALL_WEIGHT);
-                eastCumulativeIntegrity *= Math.min(1f, bottomIntegrity[3] * BOTTOM_FALL_WEIGHT);
+
+                // Current Rules:
+                // - Keep below the LAYER THRESHOLD
+                // - Don't drag anything wiith a value of 0 or below.
+                // - Drag center blocks closer to 1f of stability
+                northCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(bottomIntegrity[0], BOTTOM_FALL_TWEAK, posInLayer)
+                );
+                southCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(bottomIntegrity[1], BOTTOM_FALL_TWEAK, posInLayer)
+                );
+                westCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(bottomIntegrity[2], BOTTOM_FALL_TWEAK, posInLayer)
+                );
+                eastCumulativeIntegrity *= Math.min(
+                        LAYER_THRESHOLD,
+                        genTweakedValue(bottomIntegrity[3], BOTTOM_FALL_TWEAK, posInLayer)
+                );
 
                 nextLayer = c.getLayerBelow(); // Switch out layer for next loop
             }
@@ -471,6 +540,18 @@ public class GBehaveJenga extends MicroGameBehaviour implements Listener {
             return finalIntegrity[indexOfConcern];
         }
         throw new IllegalStateException("Layer of block specified was not in the tower during physics calculation."); // Block was not in the tower? :)))))
+    }
+
+    protected float genTweakedValue(float integrity, float layerTweak, int blockIndex) {
+        float centerMultiplier = (integrity > 0f) && (blockIndex == 1) ? CENTER_BLOCK_TWEAK : 1f;
+        return multiplyFromMidpoint(1f, integrity, centerMultiplier * layerTweak);
+    }
+
+    /** Multiplies a value to a defined midpoint with a multiplier. */
+    protected float multiplyFromMidpoint(float midpoint, float value, float multiplier) {
+        float delta = value - midpoint;
+        float tweaked = delta * multiplier;
+        return midpoint + tweaked;
     }
 
 
