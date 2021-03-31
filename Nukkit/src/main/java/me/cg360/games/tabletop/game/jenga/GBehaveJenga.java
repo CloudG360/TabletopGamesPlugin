@@ -14,6 +14,8 @@ import me.cg360.games.tabletop.TabletopGamesNukkit;
 import me.cg360.games.tabletop.Util;
 import me.cg360.games.tabletop.game.jenga.entity.EntityJengaBlockCollider;
 import me.cg360.games.tabletop.game.jenga.entity.EntityVisualJengaBlock;
+import me.cg360.games.tabletop.game.jenga.layer.EmulatedJengaLayer;
+import me.cg360.games.tabletop.game.jenga.layer.JengaLayer;
 import me.cg360.games.tabletop.ngapimicro.MicroGameWatchdog;
 import me.cg360.games.tabletop.ngapimicro.keychain.GamePropertyKeys;
 import me.cg360.games.tabletop.ngapimicro.keychain.InitKeys;

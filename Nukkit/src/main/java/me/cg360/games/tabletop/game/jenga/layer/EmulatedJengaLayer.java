@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.game.jenga;
+package me.cg360.games.tabletop.game.jenga.layer;
 
 import cn.nukkit.level.Location;
 import me.cg360.games.tabletop.TabletopGamesNukkit;

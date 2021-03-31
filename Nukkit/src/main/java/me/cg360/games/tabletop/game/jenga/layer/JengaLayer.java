@@ -1,4 +1,4 @@
-package me.cg360.games.tabletop.game.jenga;
+package me.cg360.games.tabletop.game.jenga.layer;
 
 import cn.nukkit.level.Location;
 import cn.nukkit.level.format.FullChunk;
@@ -256,6 +256,19 @@ public class JengaLayer {
     public Location getLayerOrigin() { return layerOrigin; }
     public float getScale() { return scale; }
     public boolean isAxisAlternate() { return isAxisAlternate; }
+
+    public Optional<EntityVisualJengaBlock> getIndex(int index){
+        switch (index) {
+            case 0:
+                return getLeft();
+            case 1:
+                return getCenter();
+            case 2:
+                return getRight();
+            default:
+                return Optional.empty();
+        }
+    }
 
     public Optional<EntityVisualJengaBlock> getLeft() { return Optional.ofNullable(left); }
     public Optional<EntityVisualJengaBlock> getCenter() { return Optional.ofNullable(center); }
